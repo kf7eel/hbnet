@@ -141,7 +141,7 @@ def sendAprs():
                 rx_utile = dati[2][0:3]+'.'+dati[2][3:]
                 tx_utile = dati[3][0:3]+'.'+dati[3][3:]
                                     
-                if self._config['APRS_ENABLED']:                    
+                if self._config['APRS']['ENABLED']:                    
                     AIS.sendall(str(dati[0])+">APRS,TCPIP*,qAC,"+str(file_config['APRS']['CALLSIGN'])+":!"+str(lat_utile)[:-2]+lat_verso+"/"+str(lon_utile)[:-1]+lon_verso+"r"+str(file_config['APRS']['MESSAGE'])+' RX: '+str(rx_utile)+' TX: '+str(tx_utile))
                     logging.info('APRS INVIATO/APRS Sent')
                 else:
