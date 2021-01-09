@@ -31,7 +31,7 @@ Actually tested
  | BTech DMR-6x2 | YES | Most likely |
  | MD-380 (MD380tools, no GPS) | - | YES |
  | MD-380 (stock firmware, GPS) | YES | Most likely |
- | Motorola DP4801| WIP | Yes |
+ | Motorola DP3601| WIP | Yes |
 
 
 ## Highly suspected to work:
