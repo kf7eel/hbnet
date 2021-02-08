@@ -96,25 +96,36 @@ def sendAprs():
                     d1 = abs(d1_c)
                     dm1=abs(float(dati[4])) - d1
                     dm1_s= float(dm1) * 60
-                    if int(str(dm1_s).split(".")[0]) < 10:
-                        dm1_s = dm1_s * 10
                     dm1_u="{:.4f}".format(dm1_s)
-                    if d1 < 10 and d1 > -10:
-                        lat_utile='0'+str(d1)+str(dm1_u)
+                    if int(str(dm1_s).split(".")[0]) < 10:
+                        if d1 < 10 and d1 > -10:
+                            lat_utile='0'+str(d1)+'0'+str(dm1_u)
+                        else:
+                            lat_utile = str(d1)+'0'+str(dm1_u)
                     else:
-                        lat_utile = str(d1)+str(dm1_u)
+                        if d1 < 10 and d1 > -10:
+                            lat_utile='0'+str(d1)+str(dm1_u)
+                        else:
+                            lat_utile = str(d1)+str(dm1_u)
+
                     lat_verso = 'S'
+                
                 else:
                     d1 = int(float(dati[4]))
                     dm1=float(dati[4]) - d1
                     dm1_s= float(dm1) * 60
-                    if int(str(dm1_s).split(".")[0]) < 10:
-                        dm1_s = dm1_s * 10
                     dm1_u="{:.4f}".format(dm1_s)
-                    if d1 < 10 and d1 > -10:
-                        lat_utile='0'+str(d1)+str(dm1_u)
+                    if int(str(dm1_s).split(".")[0]) < 10:
+                        if int(str(dm1_s).split(".")[0]) < 10:
+                            if d1 < 10 and d1 > -10:
+                                lat_utile='0'+str(d1)+'0'+str(dm1_u)
+                            else:
+                                lat_utile = str(d1)+'0'+str(dm1_u)
                     else:
-                        lat_utile = str(d1)+str(dm1_u)
+                        if d1 < 10 and d1 > -10:
+                            lat_utile='0'+str(d1)+str(dm1_u)
+                        else:
+                            lat_utile = str(d1)+str(dm1_u)
                     lat_verso = 'N'
                                     
                                 
@@ -122,30 +133,42 @@ def sendAprs():
                     d2=abs(d2_c)
                     dm2=abs(float(dati[5])) - d2
                     dm2_s= float(dm2) * 60
-                    if int(str(dm2_s).split(".")[0]) < 10:
-                        dm2_s = dm2_s * 10
                     dm2_u="{:.3f}".format(dm2_s)
-                    if d2 < 10 and d2 > -10:
-                        lon_utile = '00'+str(d2)+str(dm2_u)
-                    elif d2 < 100:
-                        lon_utile = '0'+str(d2)+str(dm2_u)
+                    if int(str(dm2_s).split(".")[0]) < 10:
+                        if d2 < 10 and d2 > -10:
+                            lon_utile = '00'+str(d2)+'0'+str(dm2_u)
+                        elif d2 < 100:
+                            lon_utile = '0'+str(d2)+'0'+str(dm2_u)
+                        else:
+                            lon_utile = str(d2)+'0'+str(dm2_s)
                     else:
-                        lon_utile = str(d2)+str(dm2_s)
+                        if d2 < 10 and d2 > -10:
+                            lon_utile = '00'+str(d2)+str(dm2_u)
+                        elif d2 < 100:
+                            lon_utile = '0'+str(d2)+str(dm2_u)
+                        else:
+                            lon_utile = str(d2)+str(dm2_u)
                     lon_verso = 'W'
                                     
                 else:
                     d2=int(float(dati[5]))
                     dm2=float(dati[5]) - d2
                     dm2_s= float(dm2) * 60
-                    if int(str(dm2_s).split(".")[0]) < 10:
-                        dm2_s = dm2_s * 10
                     dm2_u="{:.3f}".format(dm2_s)
-                    if d2 < 10 and d2 > -10:
-                        lon_utile = '00'+str(d2)+str(dm2_u)
-                    elif d2 < 100:
-                        lon_utile = '0'+str(d2)+str(dm2_u)
+                    if int(str(dm2_s).split(".")[0]) < 10:
+                        if d2 < 10 and d2 > -10:
+                            lon_utile = '00'+str(d2)+'0'+str(dm2_u)
+                        elif d2 < 100:
+                            lon_utile = '0'+str(d2)+'0'+str(dm2_u)
+                        else:
+                            lon_utile = str(d2)+'0'+str(dm2_s)
                     else:
-                        lon_utile = str(d2)+str(dm2_u)
+                        if d2 < 10 and d2 > -10:
+                            lon_utile = '00'+str(d2)+str(dm2_u)
+                        elif d2 < 100:
+                            lon_utile = '0'+str(d2)+str(dm2_u)
+                        else:
+                            lon_utile = str(d2)+str(dm2_u)
                     lon_verso = 'E'
                                     
                 rx_utile = dati[2][0:3]+'.'+dati[2][3:]
