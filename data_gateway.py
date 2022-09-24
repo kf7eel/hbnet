@@ -575,6 +575,7 @@ def download_config(CONFIG_FILE, cli_file):
         corrected_config['WEB_SERVICE'] = {}
         corrected_config['WEB_SERVICE']['THIS_SERVER_NAME'] = CONFIG_FILE['WEB_SERVICE']['THIS_SERVER_NAME']
         corrected_config['WEB_SERVICE']['URL'] = CONFIG_FILE['WEB_SERVICE']['URL']
+        corrected_config['WEB_SERVICE']['DISABLE_FALLBACK'] = CONFIG_FILE['WEB_SERVICE']['DISABLE_FALLBACK']
         corrected_config['WEB_SERVICE']['SHARED_SECRET'] = CONFIG_FILE['WEB_SERVICE']['SHARED_SECRET']
         corrected_config['WEB_SERVICE']['REMOTE_CONFIG_ENABLED'] = CONFIG_FILE['WEB_SERVICE']['REMOTE_CONFIG_ENABLED']
         corrected_config['WEB_SERVICE'].update(resp['config']['WEB_SERVICE'])
@@ -733,6 +734,9 @@ def download_config(CONFIG_FILE, cli_file):
     # For exception, write blank dict
     except requests.ConnectionError:
         logger.error('Config server unreachable, defaulting to local config')
+        if LOCAL_CONFIG['WEB_SERVICE']['DISABLE_FALLBACK']:
+                logger.error('Falback disabled. Exiting...')
+                sys.exit()
         return data_gateway_config.build_config(cli_file)
 
 ##################################################################################################

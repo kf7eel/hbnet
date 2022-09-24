@@ -162,6 +162,7 @@ def build_config(_config_file):
                     'THIS_SERVER_NAME': config.get(section, 'THIS_SERVER_NAME'),
                     'URL': config.get(section, 'URL'),
                     'REMOTE_CONFIG_ENABLED': config.getboolean(section, 'REMOTE_CONFIG_ENABLED'),
+                    'DISABLE_FALLBACK': config.getboolean(section, 'DISABLE_FALLBACK'),
                     'DASHBOARD_ONLY': config.getboolean(section, 'DASHBOARD_ONLY'),
                     'SHARED_SECRET': config.get(section, 'SHARED_SECRET'),
                 })
