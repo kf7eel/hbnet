@@ -1,0 +1,33 @@
+{% extends 'flask_user/_public_base.html' %}
+{% block content %}
+
+<h2 style="text-align: center;">Add Page</h2>
+
+<form action="/manage_page?edit_save={{id}}" method="post">
+
+    <div class="input-group mb-3">
+        <span class="input-group-text" id="basic-addon1">Title</span>
+        <input type="text" name="name" class="form-control"  aria-describedby="basic-addon1" value="{{name}}">
+      </div>
+
+    <br />
+   
+      <textarea id="ed1" name="data" class="form-control" aria-label="Data">{{data}}</textarea>
+
+    <br />  
+
+    <div class="input-group">
+        <span class="input-group-text">Notes</span>
+        <textarea id="ed1" name="notes" class="form-control" aria-label="Notes">{{notes}}</textarea>
+      </div>
+
+    <br />
+
+    <p style="text-align: center;"><input class="btn btn-primary" type="submit" value="Save" /></form></p>
+<br />  
+
+<script>
+    const easyMDE = new EasyMDE({element: document.getElementById('ed1')});
+    </script>
+
+{% endblock %}

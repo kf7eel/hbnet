@@ -5,7 +5,7 @@
 <div class="row">
 
 
-{{content_block}}
+{{content_block|markdown}}
 
 </div>
 
@@ -18,6 +18,20 @@
 <td style="text-align: center;">
 <h4>Latest News:</h4>
 {{news}}
+
+<div class="card">
+    <div class="card-body">
+      <h4 class="card-title"><a href="news/{{news_id}}">{{subject}}</h4></a>
+      <hr />
+          &nbsp;
+      <p style="text-align: center;">{{date}}</p>
+      <hr />
+      &nbsp;
+      <p class="card-text">{{text|markdown}}</p>
+      <p style="text-align: center;"></p>
+  </div>
+  </div>
+
 </td>
 </tr>
 </tbody>

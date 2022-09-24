@@ -1,0 +1,34 @@
+{% extends 'flask_user/_public_base.html' %}
+{% block content %}
+
+<h1 style="text-align: center;">Pages</h1>
+
+{% if admin_page %}
+
+{% if call_or_get(current_user.has_roles(['Admin'])) %}
+<table style="margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<td><a href="/manage_page?new=yes"><button type="button" class="btn btn-success">Add Page</button></a></td>
+<td>.</td>
+<td>.</td>
+<td>.</td>
+</tr>
+</tbody>
+</table>
+{% endif %}
+
+{% endif %}
+
+<table data-toggle="table" data-pagination="true" data-search="true" >
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+{{content}}
+</tbody>
+</table>
+{% endblock %}

@@ -13,4 +13,5 @@ cryptography
 setproctitle
 scapy
 paho-mqtt
+service_identity
 

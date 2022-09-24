@@ -1691,6 +1691,9 @@ if __name__ == '__main__':
         except Exception as e:
             logger.error('Control server unreachable or other error. Using local config.')
             logger.error(e)
+            if LOCAL_CONFIG['WEB_SERVICE']['DISABLE_FALLBACK']:
+                logger.info('Falback disabled. Exiting...')
+                sys.exit()
             spec = importlib.util.spec_from_file_location("module.name", cli_args.RULES_FILE)
             rules_module = importlib.util.module_from_spec(spec)
             try:
@@ -1763,5 +1766,6 @@ if __name__ == '__main__':
         pass
     else:
         Path('/tmp/' + (CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/')).mkdir()
-        
+
+           
     reactor.run()

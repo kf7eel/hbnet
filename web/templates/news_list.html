@@ -1,0 +1,16 @@
+{% extends 'flask_user/_public_base.html' %}
+{% block content %}
+
+<table data-toggle="table" data-pagination="true" data-search="true" >
+    <thead>
+      <tr>
+        <th>Subject</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+  {{content}}
+  </tbody>
+  </table>
+
+  {% endblock %}

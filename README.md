@@ -1,4 +1,4 @@
-## HBNet is still under heavy development. Documentation is being added to the Wiki as I write it, so check perodically to see if there is any new information. V1.0 will be ready in the next few months. See [HBNet.xyz](https://hbnet.xyz) or [here](https://github.com/kf7eel/hbnet/discussions/33) for the development news.
+## HBNet is still under heavy development and currently undergoing a partiaql rewrite. Documentation is being added to the Wiki as I write it, so check perodically to see if there is any new information. V1.0 will be ready in the next few months. See [here](https://github.com/kf7eel/hbnet/discussions/33) for the development news.
 
 ![ ](https://raw.githubusercontent.com/kf7eel/hblink3/hbnet/HBNet.png  "Logo")
 

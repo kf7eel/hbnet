@@ -161,6 +161,7 @@ def build_config(_config_file):
                     'THIS_SERVER_NAME': config.get(section, 'THIS_SERVER_NAME'),
                     'URL': config.get(section, 'URL'),
                     'REMOTE_CONFIG_ENABLED': config.getboolean(section, 'REMOTE_CONFIG_ENABLED'),
+                    'DISABLE_FALLBACK': config.getboolean(section, 'DISABLE_FALLBACK'),
                     'APPEND_INT': config.getint(section, 'APPEND_INT'),
                     'EXTRA_INT_1': config.getint(section, 'EXTRA_INT_1'),
                     'EXTRA_INT_2': config.getint(section, 'EXTRA_INT_2'),

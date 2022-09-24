@@ -6,10 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ user_manager.USER_APP_NAME }}</title>
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+<!-- Markdown editor -->
+<link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script> 
+
+<!--Bootstrap select-->
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
 
 
     <!-- In-lining styles to avoid needing a separate .css file -->
@@ -47,6 +54,9 @@
     <ul class="navbar-nav">
       <li class="nav-item">
         <a class="nav-link" href="{{url}}/"><i class="bi bi-house-fill"></i> Home </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{url}}/pages"><i class="bi bi-file-earmark-break-fill"></i> Pages </a>
       </li>
     {% if global_config['mode'] == 'FULL' or global_config['mode'] == 'DMR_ONLY' %}
       <li class="nav-item">
@@ -133,6 +143,7 @@
             <li><a class="dropdown-item" href="{{url}}/approve_users">Waiting Approval</a></li>
       <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{{url}}/manage_news">Manage News</a></li>
+    <li><a class="dropdown-item" href="/manage_page"> Manage Pages </a></li>
             <li><a class="dropdown-item" href="{{url}}/misc_settings">Misc Options</a></li>
     {% if global_config['mode'] == 'FULL' or global_config['mode'] == 'DMR_ONLY' %}
             <li><a class="dropdown-item" href="{{url}}/auth_log">Authorization Log</a></li>
@@ -238,8 +249,10 @@
     <!-- Bootstrap -->
 
     <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
 
 
     {# *** Allow sub-templates to insert extra html to the bottom of the body *** #}

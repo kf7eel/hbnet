@@ -53,8 +53,10 @@ import os, ast
 
 from cryptography.fernet import Fernet
 
+from flaskext.markdown import Markdown
+
 peer_locations = {}
-hbnet_version = 'HWS 0.0.1-pre_pre_alpha/MQTT'
+hbnet_version = 'V 09102022'
 
 # Query radioid.net for list of IDs
 def get_ids(callsign):
@@ -138,6 +140,7 @@ def hbnet_web_service():
     # Create Flask app load app.config
     mail = Mail()
     app = Flask(__name__)
+    Markdown(app)
     app.config.from_object(__name__+'.ConfigClass')
 
         # Initialize Flask-BabelEx
@@ -544,7 +547,14 @@ def hbnet_web_service():
         boo_2 = db.Column(db.Boolean(), nullable=True, server_default='1')
         time = db.Column(db.DateTime())
 
-
+    class Pages(db.Model):
+        __tablename__ = 'pages'
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String(1000))
+        enabled = db.Column(db.Boolean(), nullable=False, server_default='1')
+        notes = db.Column(db.String(1000))
+        data = db.Column(db.String(10000))
+        time = db.Column(db.DateTime())
 
 
         
@@ -642,24 +652,26 @@ def hbnet_web_service():
             time = datetime.datetime.utcnow()
             )
         db.session.add(flash_entry_add)
-        tos_entry_add = Misc(
-            field_1 = 'terms_of_service',
-            field_2 = '''<div class="panel panel-default">
-  <div class="panel-heading" style="text-align: center;"><h4>Terms of Use</h4></div>
-  <div class="panel-body">
-  <p>By using <strong>''' + title + '''</strong>, you agree not to do anything malicious. You agree to use the system with respect and courtesy to others. Please operate within the laws of your country.</p>
-  
-  </div>
-</div>''',
+
+        add_pg = Pages(
+            name='Home Page',
+            data="Welcome to your HBNet installation.",
+            notes = "Created on first start",
             time = datetime.datetime.utcnow()
-            )
-        db.session.add(tos_entry_add)
-        home_entry_add = Misc(
-            field_1 = 'home_page',
-            field_2 = '<p>Welcome to <strong>' + title + '</strong>.</p>',
+        )
+        db.session.add(add_pg)
+
+        add_tos = Pages(
+            name='Terms of Service',
+            data='''### Terms of Use
+
+By using this service, you agree not to do anything malicious. You agree to use the system with respect and courtesy to others. Please operate within the laws of your country.
+''',
+            notes = "Created on first start",
             time = datetime.datetime.utcnow()
-            )
-        db.session.add(home_entry_add)
+        )
+        db.session.add(add_tos)
+
         ping_list_initial = Misc(
             field_1 = 'ping_list',
             field_2 = '{}',
@@ -681,6 +693,15 @@ def hbnet_web_service():
             time = datetime.datetime.utcnow()
             )
         db.session.add(script_links_initial)
+
+        add_news = News(
+                    subject = 'Welcome',
+                    date = 'Today',
+                    text = 'Welcome',
+                    time = datetime.datetime.utcnow()
+                    )
+        db.session.add(add_news)
+
         db.session.commit()
 
     # Query radioid.net for list of DMR IDs, then add to DB
@@ -787,37 +808,85 @@ def hbnet_web_service():
     @app.route('/')
     def home_page():
         if mode == 'FULL' or mode == 'DMR_ONLY':
-            home_text = Misc.query.filter_by(field_1='home_page').first()
+            home_text = Pages.query.filter_by(id=1).first()
             #content = Markup('<strong>Index</strong>')
-            try:
-                l_news = News.query.order_by(News.time.desc()).first()
-                content = '''
-
-    <div class="card">
-      <div class="card-body">
-        <h4 class="card-title"><a href="news/''' + str(l_news.id) + '''">''' + l_news.subject + '''</h4></a>
-        <hr />
-            &nbsp;
-        <p style="text-align: center;">''' + l_news.date + '''</p>
-        <hr />
-        &nbsp;
-        <p class="card-text">''' + l_news.text + '''</p>
-        <p style="text-align: center;"></p>
-    </div>
-    </div>
-        '''
-            except:
-                content = ''
-            return render_template('index.html', news = Markup(content), content_block = Markup(home_text.field_2))
+            content = ''
+            # try:
+            l_news = News.query.order_by(News.time.desc()).first()
+            return render_template('index.html', news = Markup(content), content_block = Markup(home_text.data), text = l_news.text, subject = l_news.subject, date = l_news.date, news_id = l_news.id)
+            # except:
+            #     content = ''
+            #     return render_template('index.html', content_block = Markup(home_text.data))
         else:
             return redirect('/data_overview') 
 
     @app.route('/tos')
     def tos_page():
-        tos_text = Misc.query.filter_by(field_1='terms_of_service').first()
-        content = tos_text.field_2
+        tos_text = Pages.query.filter_by(id=2).first()
         
-        return render_template('generic.html', markup_content = Markup(content))
+        return render_template('generic.html', markup_content = tos_text.data)
+
+    @app.route('/page/<id>')
+    def other_page(id):
+        page = Pages.query.filter_by(id=int(id)).first()
+
+        # return render_template('index.html')
+        return render_template('page.html', content=Markup(page.data), page_title = page.name, page_time = local_time(page.time))
+
+
+    @app.route('/pages')
+    def all_pages():
+        content = ''
+        all_pages = Pages.query.order_by(Pages.name).all()
+        for i in all_pages:
+            if i.id == 1 or i.id == 2:
+                pass
+            else:
+                content = content + '<tr><td><a href="/page/' + str(i.id) + '">' + i.name + '</a></td><td>' + i.notes + '</td></tr>'
+        return render_template('view_pages.html', content = Markup(content))
+
+
+    @app.route('/manage_page', methods=['GET', 'POST'])
+    @login_required
+    @roles_required('Admin')
+    def manage_page():
+        if request.args.get('new'):
+            return render_template('add_page.html')
+        elif request.args.get('save'):
+            add_page(request.form.get('name'), request.form.get('data'), request.form.get('notes'))
+            content = '''<h3 style="text-align: center;">Page Saved.</h3>
+            <p style="text-align: center;">Redirecting in 3 seconds.</p>
+            <meta http-equiv="refresh" content="3; URL=/manage_page" /> '''
+            return render_template('flask_user_layout.html', markup_content=Markup(content))
+
+        elif request.args.get('delete'):
+            delete_page(int(request.args.get('delete')))
+            content = '''<h3 style="text-align: center;">Page Deleted.</h3>
+            <p style="text-align: center;">Redirecting in 3 seconds.</p>
+            <meta http-equiv="refresh" content="3; URL=/manage_page" /> '''
+            return render_template('flask_user_layout.html', markup_content=Markup(content))
+
+        elif request.args.get('edit'):
+            page = Pages.query.filter_by(id=int(request.args.get('edit'))).first()
+            return render_template('edit_page.html', name = page.name, notes = page.notes, data = page.data, id = page.id)
+
+        elif request.args.get('edit_save'):
+            edit_page(int(request.args.get('edit_save')), request.form.get('name'), request.form.get('data'), request.form.get('notes'))
+            content = '''<h3 style="text-align: center;">Page Saved.</h3>
+            <p style="text-align: center;">Redirecting in 3 seconds.</p>
+            <meta http-equiv="refresh" content="3; URL=/manage_page" /> '''
+            return render_template('flask_user_layout.html', markup_content=Markup(content))
+
+        else:
+            content = ''
+            all_pages = Pages.query.order_by(Pages.name).all()
+            for i in all_pages:
+                delete_button = ' - <a href="/manage_page?delete=' + str(i.id) + '"><button type="button" class="btn btn-danger">Delete</button></a>'
+                if i.id == 1 or i.id == 2:
+                    delete_button = ''
+                content = content + '<tr><td><a href="/page/' + str(i.id) + '">' + i.name + '</a> - <a href="/manage_page?edit=' + str(i.id) + '"><button type="button" class="btn btn-primary">Edit</button></a>' + delete_button + '</td><td>' + i.notes + '</td></tr>'
+            return render_template('view_pages.html', content = Markup(content), admin_page = True)
+
 
 
     @app.route('/map_gps/<call_ssid>')
@@ -2162,54 +2231,24 @@ def hbnet_web_service():
 ##        view_news =  News.query.order_by(News.time.desc()).paginate(page=page, per_page=1)
 
         #content = '''<table style="width: 600px; margin-left: auto; margin-right: auto;" border="1"><tbody>'''
+
+        content = ''
+
         news_content = ''
         art_count = 0
-        for article in view_news:
-            if request.args.get('all_news'):
-                art_count = 1
-            if art_count < 16:
-                news_content = news_content + '''
-<div class="card">
-  <div class="card-body">
-    <h4 class="card-title"><a href="news/''' + str(article.id) + '''">''' + article.subject + '''</h4></a>
-    <hr />
-        &nbsp;
-    <p style="text-align: center;">''' + article.date + '''</p>
-    <hr />
-    &nbsp;
-    <p class="card-text">''' + article.text + '''</p>
-    <p style="text-align: center;"></p>
-</div>
-</div>
-  <p>&nbsp;</p>
-
-
-'''
-                art_count = art_count + 1
-        #content = content + '''</tbody></table><p>&nbsp;</p>'''
-        return render_template('news.html', markup_content = Markup(news_content))
+        print(view_news)
+        for i in view_news:
+            content = content + '<tr><td><a href="/news/' + str(i.id) + '">' + i.subject + '</a></td><td>' + i.date + '</td></tr>'
+            
+        return render_template('news_list.html', content = Markup(content))
 
     @app.route('/news/<article>') #, methods=['POST', 'GET'])
     def view_arts(article):
         
         view_arti =  News.query.filter_by(id=article).first()
 
-        content = '''
-<div class="card">
-  <div class="card-body">
-    <h4 class="card-title">''' + view_arti.subject + '''</h4>
-    <hr />
-        &nbsp;
-    <p style="text-align: center;">''' + view_arti.date + '''</p>
-    <hr />
-    &nbsp;
-    <p class="card-text">''' + view_arti.text + '''</p>
-    <p style="text-align: center;"></p>
-</div>
-</div>
-
-'''
-        return render_template('news.html', markup_content = Markup(content))
+        content = ''
+        return render_template('news.html', markup_content = Markup(content), subject = view_arti.subject, date = view_arti.date, text = view_arti.text)
 
     
 
@@ -2284,10 +2323,14 @@ def hbnet_web_service():
   <tbody>
 '''
             for a in view_news:
+                if a.id == 1:
+                    delete_button = ''
+                else:
+                    delete_button = '''<a href="manage_news?delete=''' + str(a.id )+ '''"><button type="button" class="btn btn-danger">Delete</button></a>'''
                 content = content + '''
             
 <tr>
-<td><a href="news/''' + str(a.id) + '''">''' + a.subject + '''</a>    |    <a href="manage_news?delete=''' + str(a.id )+ '''"><button type="button" class="btn btn-danger">Delete</button></a></td>
+<td><a href="news/''' + str(a.id) + '''">''' + a.subject + '''</a>    |    ''' + delete_button + '''</td>
 <td>''' + a.date + '''</td>
 <td>''' + str(a.id) + '''</td>
 
@@ -2311,16 +2354,6 @@ def hbnet_web_service():
         elif request.args.get('approve_flash') == 'save':
             misc_edit_field_1('approval_flash', request.form.get('flash_text'), None, None, None, None, None, None, None, None)
             content = '''<h3 style="text-align: center;">Saved flash text.</h3>
-            <p style="text-align: center;">Redirecting in 3 seconds.</p>
-            <meta http-equiv="refresh" content="3; URL=misc_settings" /> '''
-        elif request.args.get('home') == 'save':
-            misc_edit_field_1('home_page', request.form.get('home_text'), None, None, None, None, None, None, None, None)
-            content = '''<h3 style="text-align: center;">Saved home page.</h3>
-            <p style="text-align: center;">Redirecting in 3 seconds.</p>
-            <meta http-equiv="refresh" content="3; URL=misc_settings" /> '''
-        elif request.args.get('tos') == 'save':
-            misc_edit_field_1('terms_of_service', request.form.get('tos_text'), None, None, None, None, None, None, None, None)
-            content = '''<h3 style="text-align: center;">Saved terms of service.</h3>
             <p style="text-align: center;">Redirecting in 3 seconds.</p>
             <meta http-equiv="refresh" content="3; URL=misc_settings" /> '''
         elif request.args.get('aprs') == 'save':
@@ -2372,39 +2405,6 @@ def hbnet_web_service():
     
     <p>&nbsp;</p>
 
-    <form action="misc_settings?home=save" method="POST">
-    <table style="width: 500px; margin-left: auto; margin-right: auto;" border="1">
-    <tbody>
-    <tr style="height: 51.1667px;">
-    <td style="height: 51.1667px; text-align: center;"><label for="home_text">Homepage (HTML OK, 5000 characters max):</label><br /> <textarea id="home_text" cols="65" name="home_text" rows="4">''' + home_text.field_2 + '''</textarea></td>
-    </tr>
-    <tr style="height: 27px;">
-    <td style="text-align: center; height: 27px;">
-    <p>&nbsp;</p>
-    <p><input type="submit" value="Submit" /></p>
-    </td>
-    </tr>
-    </tbody>
-    </table>
-    </form>
-    <p>&nbsp;</p>
-
-    <form action="misc_settings?tos=save" method="POST">
-    <table style="width: 500px; margin-left: auto; margin-right: auto;" border="1">
-    <tbody>
-    <tr style="height: 51.1667px;">
-    <td style="height: 51.1667px; text-align: center;"><label for="tos_text">Terms of Service (HTML OK, 5000 characters max):</label><br /> <textarea id="tos_text" cols="65" name="tos_text" rows="4">''' + tos_text.field_2 + '''</textarea></td>
-    </tr>
-    <tr style="height: 27px;">
-    <td style="text-align: center; height: 27px;">
-    <p>&nbsp;</p>
-    <p><input type="submit" value="Submit" /></p>
-    </td>
-    </tr>
-    </tbody>
-    </table>
-    </form>
-    <p>&nbsp;</p>
 
         <form action="misc_settings?aprs=save" method="POST">
     <table style="width: 500px; margin-left: auto; margin-right: auto;" border="1">
@@ -3403,6 +3403,38 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
         return render_template('flask_user_layout.html', markup_content = Markup(content))
 
 ###### DB functions #############################
+
+    def local_time(time_utc):
+        l_time = (time_utc + datetime.timedelta(hours=hbnet_tz)).strftime(time_format)
+        return l_time
+
+
+    def local_time_to_utc(time):
+        u_time = (time - datetime.timedelta(hours=hbnet_tz))
+        return u_time
+
+    def add_page(name, data, notes):
+        add_pg = Pages(
+            name=name,
+            data=data,
+            notes = notes,
+            time = datetime.datetime.utcnow()
+        )
+        db.session.add(add_pg)
+        db.session.commit()
+
+    def edit_page(id, name, data, notes):
+        page = Pages.query.filter_by(id=id).first()
+        page.name = name
+        page.data = data
+        page.time = datetime.datetime.utcnow()
+        page.notes = notes
+        db.session.commit()
+
+    def delete_page(id):
+        page = Pages.query.filter_by(id=id).first()
+        db.session.delete(page)
+        db.session.commit()
 
     def sms_que(_server):
         que_db = SMS_Que.query.filter_by(server=_server).all()

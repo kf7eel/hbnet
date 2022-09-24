@@ -1,0 +1,14 @@
+{% extends 'flask_user/_public_base.html' %}
+{% block content %}
+
+<h2 style="text-align: center;">{{page_title}}</h2>
+<p style="text-align: center;">Last updated: {{page_time}}</p>
+
+<br />  
+
+{{content|markdown}}
+
+<br />  
+
+
+{% endblock %}
