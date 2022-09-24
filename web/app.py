@@ -2839,61 +2839,61 @@ LOG_NAME: ''' + server + '''
         
         return render_template('tg_all.html', markup_content = Markup(content))
 
-    @app.route('/tags', methods=['POST', 'GET'])
-##    @login_required
-    def tag_list():
-        content = ''
-        if request.args.get('tag'):
-            ss_tags = Social.query.filter(Social.message.ilike('%#' + request.args.get('tag') + '%')).order_by(Social.time.desc()).all()
-            bb_tags = BulletinBoard.query.filter(BulletinBoard.bulletin.ilike('%#' + request.args.get('tag') + '%')).order_by(BulletinBoard.time.desc()).all()
-            sms_tags = SMSLog.query.filter(SMSLog.message.ilike('%#' + request.args.get('tag') + '%')).order_by(SMSLog.time.desc()).all()
-            for i in ss_tags:
-                tag = re.sub('.*#| .*', '', i.message)
-                content = content + ''' <tr>
-          <td>''' + i.message + ''' | ''' + str((i.time + timedelta(hours=hbnet_tz)).strftime(time_format)) + '''</td>
-        </tr> '''
-            for i in bb_tags:
-                tag = re.sub('.*#| .*', '', i.bulletin)
-                content = content + ''' <tr>
-          <td>''' + i.bulletin + ''' | ''' + str((i.time + timedelta(hours=hbnet_tz)).strftime(time_format)) + '''</td>
-        </tr> '''
-            for i in sms_tags:
-                tag = re.sub('.*#| .*', '', i.message)
-                content = content + '''<tr>
-          <td>''' + i.message + ''' | ''' + str((i.time + timedelta(hours=hbnet_tz)).strftime(time_format)) + '''</td>
-        </tr> '''
+#     @app.route('/tags', methods=['POST', 'GET'])
+# ##    @login_required
+#     def tag_list():
+#         content = ''
+#         if request.args.get('tag'):
+#             ss_tags = Social.query.filter(Social.message.ilike('%#' + request.args.get('tag') + '%')).order_by(Social.time.desc()).all()
+#             bb_tags = BulletinBoard.query.filter(BulletinBoard.bulletin.ilike('%#' + request.args.get('tag') + '%')).order_by(BulletinBoard.time.desc()).all()
+#             sms_tags = SMSLog.query.filter(SMSLog.message.ilike('%#' + request.args.get('tag') + '%')).order_by(SMSLog.time.desc()).all()
+#             for i in ss_tags:
+#                 tag = re.sub('.*#| .*', '', i.message)
+#                 content = content + ''' <tr>
+#           <td>''' + i.message + ''' | ''' + str((i.time + timedelta(hours=hbnet_tz)).strftime(time_format)) + '''</td>
+#         </tr> '''
+#             for i in bb_tags:
+#                 tag = re.sub('.*#| .*', '', i.bulletin)
+#                 content = content + ''' <tr>
+#           <td>''' + i.bulletin + ''' | ''' + str((i.time + timedelta(hours=hbnet_tz)).strftime(time_format)) + '''</td>
+#         </tr> '''
+#             for i in sms_tags:
+#                 tag = re.sub('.*#| .*', '', i.message)
+#                 content = content + '''<tr>
+#           <td>''' + i.message + ''' | ''' + str((i.time + timedelta(hours=hbnet_tz)).strftime(time_format)) + '''</td>
+#         </tr> '''
             
 
-        else:
-            ss_tags = Social.query.filter(Social.message.ilike('%#%')).order_by(Social.time.desc()).all()
-            bb_tags = BulletinBoard.query.filter(BulletinBoard.bulletin.ilike('%#%')).order_by(BulletinBoard.time.desc()).all()
-            sms_tags = SMSLog.query.filter(SMSLog.message.ilike('%#%')).order_by(SMSLog.time.desc()).all()
+#         else:
+#             ss_tags = Social.query.filter(Social.message.ilike('%#%')).order_by(Social.time.desc()).all()
+#             bb_tags = BulletinBoard.query.filter(BulletinBoard.bulletin.ilike('%#%')).order_by(BulletinBoard.time.desc()).all()
+#             sms_tags = SMSLog.query.filter(SMSLog.message.ilike('%#%')).order_by(SMSLog.time.desc()).all()
 
-            rend_list = []
-            for i in ss_tags:
-                tag = re.sub('.*#| .*', '', i.message)
-                if tag not in rend_list:
-                    content = content + ''' <tr>
-          <td><a href="/tags?tag=''' + tag + '''"><strong>#''' + tag + '''</strong></a></td>
-        </tr> '''
-                    rend_list.append(str(tag))
-            for i in bb_tags:
-                tag = re.sub('.*#| .*', '', i.bulletin)
-                if tag not in rend_list:
-                    content = content + ''' <tr>
-          <td><a href="/tags?tag=''' + tag + '''"><strong>#''' + tag + '''</strong></a></td>
-        </tr> '''
-                    rend_list.append(str(tag))
+#             rend_list = []
+#             for i in ss_tags:
+#                 tag = re.sub('.*#| .*', '', i.message)
+#                 if tag not in rend_list:
+#                     content = content + ''' <tr>
+#           <td><a href="/tags?tag=''' + tag + '''"><strong>#''' + tag + '''</strong></a></td>
+#         </tr> '''
+#                     rend_list.append(str(tag))
+#             for i in bb_tags:
+#                 tag = re.sub('.*#| .*', '', i.bulletin)
+#                 if tag not in rend_list:
+#                     content = content + ''' <tr>
+#           <td><a href="/tags?tag=''' + tag + '''"><strong>#''' + tag + '''</strong></a></td>
+#         </tr> '''
+#                     rend_list.append(str(tag))
 
-            for i in sms_tags:
-                tag = re.sub('.*#| .*', '', i.message)
-                if tag not in rend_list:
-                    content = content + ''' <tr>
-          <td><a href="/tags?tag=''' + tag + '''"><strong>#''' + tag + '''</strong></a></td>
-        </tr> '''
-                    rend_list.append(str(tag))
+#             for i in sms_tags:
+#                 tag = re.sub('.*#| .*', '', i.message)
+#                 if tag not in rend_list:
+#                     content = content + ''' <tr>
+#           <td><a href="/tags?tag=''' + tag + '''"><strong>#''' + tag + '''</strong></a></td>
+#         </tr> '''
+#                     rend_list.append(str(tag))
             
-        return render_template('tags.html', markup_content = Markup(content))
+#         return render_template('tags.html', markup_content = Markup(content))
     
 
     @app.route('/sms.xml')
@@ -3087,95 +3087,95 @@ LOG_NAME: ''' + server + '''
 ##    </tr>'''
         return render_template('tp_add.html', markup_content = Markup(content), url = url, form = show_form)
 
-    @app.route('/ss')
-    def get_all_ss():
-        ss_all = Social.query.order_by(Social.time.desc()).all()
-        content = ''
-        disp_list = []
-        for i in ss_all:
-            if i.dmr_id not in disp_list:
-                content = content + '''
-<tr>
-    <td><p style="text-align: center;"><strong>''' + i.callsign + '''<strong></p> \n <a href="/ss/''' + str(i.dmr_id) + '''"><p style="text-align: center;"><button type="button" class="btn btn-warning">''' + str(i.dmr_id) + '''</button></p></a></td>
-      <td>''' + i.message + '''</td>
-    </tr>
-'''
-                disp_list.append(i.dmr_id)
-            elif i.dmr_id in disp_list:
-                pass
+#     @app.route('/ss')
+#     def get_all_ss():
+#         ss_all = Social.query.order_by(Social.time.desc()).all()
+#         content = ''
+#         disp_list = []
+#         for i in ss_all:
+#             if i.dmr_id not in disp_list:
+#                 content = content + '''
+# <tr>
+#     <td><p style="text-align: center;"><strong>''' + i.callsign + '''<strong></p> \n <a href="/ss/''' + str(i.dmr_id) + '''"><p style="text-align: center;"><button type="button" class="btn btn-warning">''' + str(i.dmr_id) + '''</button></p></a></td>
+#       <td>''' + i.message + '''</td>
+#     </tr>
+# '''
+#                 disp_list.append(i.dmr_id)
+#             elif i.dmr_id in disp_list:
+#                 pass
             
-        print(content)
-        return render_template('ss_all.html', markup_content = Markup(content))
+#         print(content)
+#         return render_template('ss_all.html', markup_content = Markup(content))
 
-    @app.route('/ss/<dmr_id>.xml')
-    def get_ss_rss(dmr_id):
-        rss_header = """<?xml version="1.0" encoding="UTF-8" ?>
-      <rss version="2.0">
-      <channel>
-      <title>""" + title + """ - Social Status Feed for """ + str(dmr_id) + """</title>
-      <link>""" + url + """/ss/""" + dmr_id + """</link>
-      <description>This is a feed of all posts from """ + dmr_id + """</description>"""
-        ss_all = Social.query.filter_by(dmr_id=dmr_id).order_by(Social.time.desc()).all()
-        ss_content = ''
-        for i in ss_all:
-            ss_content = ss_content + """
-              <item>
-                <title>""" + str(dmr_id) + ' - ' + str((i.time + timedelta(hours=hbnet_tz)).strftime(time_format)) + """</title>
-                <link>""" + url + """/ss/""" + dmr_id + """</link>
-                <description>""" + str(i.message) + """ - """ + str(i.time.strftime(time_format)) + """</description>
-                <pubDate>""" + str((i.time + timedelta(hours=hbnet_tz)).strftime('%a, %d %b %y')) + """</pubDate>
-              </item>
-"""
+#     @app.route('/ss/<dmr_id>.xml')
+#     def get_ss_rss(dmr_id):
+#         rss_header = """<?xml version="1.0" encoding="UTF-8" ?>
+#       <rss version="2.0">
+#       <channel>
+#       <title>""" + title + """ - Social Status Feed for """ + str(dmr_id) + """</title>
+#       <link>""" + url + """/ss/""" + dmr_id + """</link>
+#       <description>This is a feed of all posts from """ + dmr_id + """</description>"""
+#         ss_all = Social.query.filter_by(dmr_id=dmr_id).order_by(Social.time.desc()).all()
+#         ss_content = ''
+#         for i in ss_all:
+#             ss_content = ss_content + """
+#               <item>
+#                 <title>""" + str(dmr_id) + ' - ' + str((i.time + timedelta(hours=hbnet_tz)).strftime(time_format)) + """</title>
+#                 <link>""" + url + """/ss/""" + dmr_id + """</link>
+#                 <description>""" + str(i.message) + """ - """ + str(i.time.strftime(time_format)) + """</description>
+#                 <pubDate>""" + str((i.time + timedelta(hours=hbnet_tz)).strftime('%a, %d %b %y')) + """</pubDate>
+#               </item>
+# """
            
-        return Response(rss_header + ss_content + "\n</channel>\n</rss>", mimetype='text/xml')
+#         return Response(rss_header + ss_content + "\n</channel>\n</rss>", mimetype='text/xml')
     
-    @app.route('/ss/<dmr_id>-twtxt.txt')
-    def get_ss_twtxt(dmr_id):
-        ss_all = Social.query.filter_by(dmr_id=dmr_id).order_by(Social.time.desc()).all()
-        ss_last =Social.query.filter_by(dmr_id=dmr_id).order_by(Social.time.desc()).first()
+#     @app.route('/ss/<dmr_id>-twtxt.txt')
+#     def get_ss_twtxt(dmr_id):
+#         ss_all = Social.query.filter_by(dmr_id=dmr_id).order_by(Social.time.desc()).all()
+#         ss_last =Social.query.filter_by(dmr_id=dmr_id).order_by(Social.time.desc()).first()
 
-        print(ss_all)
-        ss_content = '''# Generated by HBNet - https://hbnet.xyz
-# ''' + title + '''
+#         print(ss_all)
+#         ss_content = '''# Generated by HBNet - https://hbnet.xyz
+# # ''' + title + '''
 
-# nick        = ''' + str(ss_last.callsign).upper() + ' (' + str(ss_last.dmr_id) + ''')
-# url         = ''' + url + '''/ss/''' + str(ss_last.dmr_id) + '''
-# avatar      = ''' + url + '''/static/HBnet.png
-# description = Social Status feed in TWTXT format for ''' + str(ss_last.callsign).upper() + ' (' + str(ss_last.dmr_id) + ''')
+# # nick        = ''' + str(ss_last.callsign).upper() + ' (' + str(ss_last.dmr_id) + ''')
+# # url         = ''' + url + '''/ss/''' + str(ss_last.dmr_id) + '''
+# # avatar      = ''' + url + '''/static/HBnet.png
+# # description = Social Status feed in TWTXT format for ''' + str(ss_last.callsign).upper() + ' (' + str(ss_last.dmr_id) + ''')
 
-'''
-        for i in ss_all:
-            ss_content = ss_content + str((i.time + timedelta(hours=hbnet_tz)).isoformat()) + '''\t''' + i.message + '''\n'''
-        return ss_content
-
-
+# '''
+#         for i in ss_all:
+#             ss_content = ss_content + str((i.time + timedelta(hours=hbnet_tz)).isoformat()) + '''\t''' + i.message + '''\n'''
+#         return ss_content
 
 
 
-    @app.route('/ss/<dmr_id>')
-    def get_ss(dmr_id):
-        try:
-            ssd = Social.query.filter_by(dmr_id=dmr_id).order_by(Social.time.desc()).first() 
-            ss_all = Social.query.filter_by(dmr_id=dmr_id).order_by(Social.time.desc()).all()
-            post_content = ''
-            content = '''
-    <div class="card" style="width: 400px;">
-    <div class="card-body">
-    <h4 class="card-title" style="text-align: center;">''' + ssd.callsign + ' - ' + str(ssd.dmr_id) + '''</h4>\n <p style="text-align: center;">''' + str((ssd.time + timedelta(hours=hbnet_tz)).strftime(time_format)) + '''</p>
-    <br /><hr /><br />
-    <p class="card-text" style="text-align: center;"><strong>''' + ssd.message + '''</strong></p>
-<br /><hr /><br />
-    '''
-            for i in ss_all:
-                post_content = post_content + '''
-        <tr>
-          <td>''' + i.message + '''</td>
-          <td>''' + str((i.time + timedelta(hours=hbnet_tz)).strftime(time_format)) + '''</td>
-        </tr>'''
-        except:
-            content = '<h4><p style="text-align: center;">No posts by user.</p></h4>'
-            all_post = ''
-        return render_template('ss.html', markup_content = Markup(content), all_post = Markup(post_content), user_id = dmr_id)
+
+
+#     @app.route('/ss/<dmr_id>')
+#     def get_ss(dmr_id):
+#         try:
+#             ssd = Social.query.filter_by(dmr_id=dmr_id).order_by(Social.time.desc()).first() 
+#             ss_all = Social.query.filter_by(dmr_id=dmr_id).order_by(Social.time.desc()).all()
+#             post_content = ''
+#             content = '''
+#     <div class="card" style="width: 400px;">
+#     <div class="card-body">
+#     <h4 class="card-title" style="text-align: center;">''' + ssd.callsign + ' - ' + str(ssd.dmr_id) + '''</h4>\n <p style="text-align: center;">''' + str((ssd.time + timedelta(hours=hbnet_tz)).strftime(time_format)) + '''</p>
+#     <br /><hr /><br />
+#     <p class="card-text" style="text-align: center;"><strong>''' + ssd.message + '''</strong></p>
+# <br /><hr /><br />
+#     '''
+#             for i in ss_all:
+#                 post_content = post_content + '''
+#         <tr>
+#           <td>''' + i.message + '''</td>
+#           <td>''' + str((i.time + timedelta(hours=hbnet_tz)).strftime(time_format)) + '''</td>
+#         </tr>'''
+#         except:
+#             content = '<h4><p style="text-align: center;">No posts by user.</p></h4>'
+#             all_post = ''
+#         return render_template('ss.html', markup_content = Markup(content), all_post = Markup(post_content), user_id = dmr_id)
 
     @app.route('/all_mail/<user>', methods=['GET', 'POST'])
     @roles_required('Admin')
@@ -3682,31 +3682,31 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
         
     
         
-    def del_ss(_dmr_id):
-        try:
-##            ss_post = Social.query.filter_by(dmr_id=_dmr_id).first()
-##            db.session.delete(ss_post)
-##            db.session.commit()
-            ss_post = Social.query.filter_by(dmr_id=_dmr_id).all()
-            for i in ss_post:
-                elap_time = int(datetime.datetime.utcnow().strftime('%s')) - int(i.time.strftime('%s'))
-                # Remove entries more than 1 year old
-                if elap_time > 31536000:
-                    db.session.delete(i)
+#     def del_ss(_dmr_id):
+#         try:
+# ##            ss_post = Social.query.filter_by(dmr_id=_dmr_id).first()
+# ##            db.session.delete(ss_post)
+# ##            db.session.commit()
+#             ss_post = Social.query.filter_by(dmr_id=_dmr_id).all()
+#             for i in ss_post:
+#                 elap_time = int(datetime.datetime.utcnow().strftime('%s')) - int(i.time.strftime('%s'))
+#                 # Remove entries more than 1 year old
+#                 if elap_time > 31536000:
+#                     db.session.delete(i)
 
-        except:
-            print('Social Status not in DB')
-            pass
+#         except:
+#             print('Social Status not in DB')
+#             pass
    
-    def ss_add(_callsign, _message, _dmr_id):
-        add_ss = Social(
-            callsign = _callsign,
-            message = _message,
-            time = datetime.datetime.utcnow(),
-            dmr_id = _dmr_id
-            )
-        db.session.add(add_ss)
-        db.session.commit()
+#     def ss_add(_callsign, _message, _dmr_id):
+#         add_ss = Social(
+#             callsign = _callsign,
+#             message = _message,
+#             time = datetime.datetime.utcnow(),
+#             dmr_id = _dmr_id
+#             )
+#         db.session.add(add_ss)
+#         db.session.commit()
         
     def oo_server_add(_server, _other_options):
         s = ServerList.query.filter_by(name=_server).first()
@@ -7391,12 +7391,12 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
     </tr>
 
 '''
-        for ss in ss_all:
-            ss_log = ss_log + '''<tr>
-      <td><p style="text-align: center;"><strong>''' + ss.callsign + '''<strong></p> \n <p style="text-align: center;"><a href="/ss/''' + str(ss.dmr_id) + '''"><button type="button" class="btn btn-warning">''' + str(ss.dmr_id) + '''</button></a></p></td>
-      <td><p style="text-align: center;">''' + ss.message + '''</p></td>
-      </tr>
-'''
+#         for ss in ss_all:
+#             ss_log = ss_log + '''<tr>
+#       <td><p style="text-align: center;"><strong>''' + ss.callsign + '''<strong></p> \n <p style="text-align: center;"><a href="/ss/''' + str(ss.dmr_id) + '''"><button type="button" class="btn btn-warning">''' + str(ss.dmr_id) + '''</button></a></p></td>
+#       <td><p style="text-align: center;">''' + ss.message + '''</p></td>
+#       </tr>
+# '''
             
 
         return render_template('data_overview.html', ll_content = Markup(dev_content), bull_content = Markup(bb_content), sms_log = Markup(sms_l), ss_all = Markup(ss_log))
