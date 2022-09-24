@@ -171,11 +171,12 @@ def sms_format_retrieve(sub):
 
 def mqtt_main(mqtt_user, mqtt_pass, mqtt_user2, mqtt_pass2, broker_url = 'localhost', broker_port = 1883, broker_url2 = 'localhost', broker_port2 = 1883):
     global mqtt_client, mqtt_client2
-    if broker_url2 != '':
-        logger.info('Enabling MQTT Server 2')
-        mqtt_client2 = mqtt.Client(client_id = mqtt_shortcut_gen + '-' + str(random.randint(1,99)))
-    elif broker_url2 == '':
-        mqtt_client2 = ''
+    # if broker_url2 != '':
+    #     logger.info('Enabling MQTT Server 2')
+    #     mqtt_client2 = mqtt.Client(client_id = mqtt_shortcut_gen + '-' + str(random.randint(1,99)))
+    # elif broker_url2 == '':
+    #     mqtt_client2 = ''
+    #     logger.info('Not using 2nd MQTT servver')
 ##    print(broker_port)
     # On connect, send announcement
     def on_connect(client, userdata, flags, rc):
@@ -187,18 +188,20 @@ def mqtt_main(mqtt_user, mqtt_pass, mqtt_user2, mqtt_pass2, broker_url = 'localh
         global mqtt_client2
         print('connect')
         # Pass MQTT server details to instrance           
-        if mqtt_user != '':
-            logger.info('MQTT User/Pass specified')
-            mqtt_client.username_pw_set(mqtt_user, mqtt_pass)
-        if mqtt_user2 != '':
-            logger.info('MQTT User/Pass specified for server 2')
-            mqtt_client.username_pw_set(mqtt_user, mqtt_pass)
+        # if mqtt_user != '':
+        #     logger.info('MQTT User/Pass specified')
+        #     mqtt_client.username_pw_set(mqtt_user, mqtt_pass)
+        # if mqtt_user2 != '':
+        #     logger.info('MQTT User/Pass specified for server 2')
+        mqtt_client.username_pw_set(mqtt_user, mqtt_pass)
         mqtt_client.connect(broker_url, broker_port, keepalive = 30)
-        if broker_url2 == '':
-            mqtt_client2 = ''
-            logger.info('Second MQTT server not used')
-        elif broker_url2 != '':
-            mqtt_client2.connect(broker_url2, broker_port2, keepalive = 30)
+        print(broker_url)
+        print(broker_port)
+        # if broker_url2 == '':
+        #     mqtt_client2 = ''
+        #     logger.info('Second MQTT server not used')
+        # elif broker_url2 != '':
+        #     mqtt_client2.connect(broker_url2, broker_port2, keepalive = 30)
 
     # Process received msg here
     def on_message(client, userdata, message):
@@ -261,11 +264,11 @@ def mqtt_main(mqtt_user, mqtt_pass, mqtt_user2, mqtt_pass2, broker_url = 'localh
                 print(dict_payload)
             
     mqtt_client = mqtt.Client(client_id = mqtt_shortcut_gen + '-' + str(random.randint(1,99)))
-    if broker_url2 != '':
-        mqtt_client2.will_set("ANNOUNCE", json.dumps({mqtt_shortcut_gen:"LOST_CONNECTION"}), 0, False)
-        mqtt_client2.on_message = on_message
-        mqtt_client2.on_connect = on_connect
-        mqtt_client2.on_disconnect = on_disconnect
+    # if broker_url2 != '':
+    #     mqtt_client2.will_set("ANNOUNCE", json.dumps({mqtt_shortcut_gen:"LOST_CONNECTION"}), 0, False)
+    #     mqtt_client2.on_message = on_message
+    #     mqtt_client2.on_connect = on_connect
+    #     mqtt_client2.on_disconnect = on_disconnect
     # Last will and testament
     mqtt_client.will_set("ANNOUNCE", json.dumps({mqtt_shortcut_gen:"LOST_CONNECTION"}), 0, False)
     mqtt_client.on_message = on_message
@@ -284,10 +287,10 @@ def mqtt_main(mqtt_user, mqtt_pass, mqtt_user2, mqtt_pass2, broker_url = 'localh
     mqtt_client.subscribe("ANNOUNCE/MQTT", qos=0)
     
 
-    if broker_url2 != '':
-        mqtt_client2.subscribe('MSG/' + mqtt_shortcut_gen + '/#', qos=0)
-        mqtt_client2.subscribe("ANNOUNCE", qos=0)
-        mqtt_client2.loop_start()
+    # if broker_url2 != '':
+    #     mqtt_client2.subscribe('MSG/' + mqtt_shortcut_gen + '/#', qos=0)
+    #     mqtt_client2.subscribe("ANNOUNCE", qos=0)
+    #     mqtt_client2.loop_start()
 
     mqtt_client.loop_start()
     
@@ -295,21 +298,21 @@ def mqtt_main(mqtt_user, mqtt_pass, mqtt_user2, mqtt_pass2, broker_url = 'localh
 def mqtt_send_msg(network_shortcut, rcv_dmr_id, snd_dmr_id, message):
     msg_dict = json.dumps({str(snd_dmr_id):message, 'network':mqtt_shortcut_gen}, indent = 4)
     mqtt_client.publish(topic='MSG/' + network_shortcut + '/' + str(rcv_dmr_id), payload=msg_dict, qos=0, retain=False)
-    if mqtt_client2 != '':
-        mqtt_client2.publish(topic='MSG/' + network_shortcut + '/' + str(rcv_dmr_id), payload=msg_dict, qos=0, retain=False)
+    # if mqtt_client2 != '':
+    #     mqtt_client2.publish(topic='MSG/' + network_shortcut + '/' + str(rcv_dmr_id), payload=msg_dict, qos=0, retain=False)
     logger.info('Sent message to another network via MQTT: ' + network_shortcut)
     
 def mqtt_send_app(network_shortcut, snd_dmr_id, message):
     msg_dict = json.dumps({'dmr_id': str(snd_dmr_id), 'message':message, 'network':mqtt_shortcut_gen, 'sms_type':'unit'}, indent = 4)
     mqtt_client.publish(topic='APP/' + network_shortcut, payload=msg_dict, qos=0, retain=False)
-    if mqtt_client2 != '':
-        mqtt_client2.publish(topic='APP/' + network_shortcut, payload=msg_dict, qos=0, retain=False)
+    # if mqtt_client2 != '':
+    #     mqtt_client2.publish(topic='APP/' + network_shortcut, payload=msg_dict, qos=0, retain=False)
     logger.info('Sent message to external application via MQTT: ' + network_shortcut)
 
 def mqtt_announce():
     mqtt_client.publish(topic="ANNOUNCE", payload=json.dumps({'shortcut':mqtt_shortcut_gen, 'type': 'network', 'url':CONFIG['DATA_CONFIG']['URL'], 'description':CONFIG['DATA_CONFIG']['DESCRIPTION']}, indent = 4), qos=0, retain=False)
-    if mqtt_client2 != '':
-        mqtt_client2.publish(topic="ANNOUNCE", payload=json.dumps({'shortcut':mqtt_shortcut_gen, 'type': 'network', 'url':CONFIG['DATA_CONFIG']['URL'], 'description':CONFIG['DATA_CONFIG']['DESCRIPTION']}, indent = 4), qos=0, retain=False)
+    # if mqtt_client2 != '':
+    #     mqtt_client2.publish(topic="ANNOUNCE", payload=json.dumps({'shortcut':mqtt_shortcut_gen, 'type': 'network', 'url':CONFIG['DATA_CONFIG']['URL'], 'description':CONFIG['DATA_CONFIG']['DESCRIPTION']}, indent = 4), qos=0, retain=False)
   
 
 def download_aprs_settings(_CONFIG):
