@@ -25,8 +25,8 @@ RUN chown -R www-data:www-data /var/log/nginx
 COPY docker/wsgi.py /opt/hbnet_web
 
 COPY docker/wsgi.ini /opt/hbnet_web
-COPY ../docker/web_service/config.py /opt/hbnet_web
-COPY ../docker/web_service/hbnet.sqlite /opt/hbnet_web
+COPY docker/config.py /opt/hbnet_web
+COPY docker/hbnet.sqlite /opt/hbnet_web
 
 RUN mkdir -p /opt/hbnet_web/data
 
