@@ -27,9 +27,9 @@ COPY hotspot_proxy_v2.py .
 #Install Python3.9 and dependencies
 RUN apt-get -y update; apt-get -y upgrade; apt-get -y install --no-install-recommends python3.9-dev python3-pip python3.9 build-essential net-tools iputils-ping wget; apt-get clean; rm -rf /var/lib/apt/lists/*
 
-RUN wget https://radioid.net/static/users.json -o /opt/hbnet/subscriber_ids.json
+RUN wget https://radioid.net/static/users.json -O /opt/hbnet/subscriber_ids.json
 
-RUN wget https://www.radioid.net/static/rptrs.json -o /opt/hbnet/peer_ids.json
+RUN wget https://www.radioid.net/static/rptrs.json -O /opt/hbnet/peer_ids.json
 
 
 RUN chown -R hbnet:hbnet /opt/hbnet/
