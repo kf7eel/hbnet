@@ -58,6 +58,9 @@
       <li class="nav-item">
         <a class="nav-link" href="{{url}}/pages"><i class="bi bi-file-earmark-break-fill"></i> Pages </a>
       </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{url}}/news"><i class="bi bi-newspaper"></i> News </a>
+      </li>
     {% if global_config['mode'] == 'FULL' or global_config['mode'] == 'DMR_ONLY' %}
       <li class="nav-item">
         <a class="nav-link" href="{{url}}/talkgroups"><i class="bi bi-card-list"></i> Talkgroups </a>
@@ -82,10 +85,6 @@
           </ul>
         </li>
     {% endif %}
-    
-    <li class="nav-item">
-        <a class="nav-link" href="{{url}}/news"><i class="bi bi-newspaper"></i> News </a>
-      </li>
 
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="help_menu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
