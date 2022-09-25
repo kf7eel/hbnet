@@ -18,6 +18,8 @@ services:
        - ./hbnet/web_service/data:/opt/hbnet_web/data:rw
        # NGINX logs
        - ./hbnet/log/web_service:/var/log/nginx:rw
+       # Non SSL config
+       - ./hbnet/web_service/hbnet.conf:/etc/nginx/sites-enabled/hbnet.conf
        # Path to custom NGINX config for SSL
        #- ./hbnet/web_service/hbnet_ssl.conf:/etc/nginx/sites-enabled/hbnet.conf
        # Path to SSL certificates
