@@ -26,9 +26,9 @@ RUN apt-get -y update; apt-get -y upgrade; apt-get -y install --no-install-recom
 
 RUN mkdir -p /opt/hbnet_data_gateway/log/
 
-RUN wget https://radioid.net/static/users.json -O /opt/hbnet_data_gateway/subscriber_ids.json
+#RUN wget https://radioid.net/static/users.json -O /opt/hbnet_data_gateway/subscriber_ids.json
 
-RUN wget https://www.radioid.net/static/rptrs.json -O /opt/hbnet_data_gateway/peer_ids.json
+#RUN wget https://www.radioid.net/static/rptrs.json -O /opt/hbnet_data_gateway/peer_ids.json
 
 RUN chown -R hbnet:hbnet /opt/hbnet_data_gateway/
 
