@@ -14,7 +14,7 @@ db_location = 'sqlite:////opt/hbnet_web/data/hbnet.sqlite'
 
 
 # Title of the HBNet Web Service/DMR network
-title = 'HBNet Web Service (Docker, Unconfigured)'
+title = 'HBNet Web Service'
 # Port to run server
 hws_port = 8080
 # IP to run server on
@@ -22,7 +22,7 @@ hws_host = '127.0.0.1'
 # Publicly accessible URL of the web server. THIS IS REQUIRED AND MUST BE CORRECT.
 url = 'http://localhost:8080'
 # Replace below with some random string such as an SHA256
-secret_key = '123456789123456789123456789123456789123456789123456789'
+secret_key = '431bf7b75e3465eba7a8fe1638ea14fd2ca5f61021513b8b2cd076a8ec3f43c8'
 
 # Mode is used to disable certain features of the web service.
 # This is primarily used to to turn the web service into a generic APRS/SMS dashboard.
@@ -46,9 +46,9 @@ default_account_state = True
 legacy_passphrase = 'passw0rd'
 
 # Coordinates to center map over
-center_map = [45.372, -121.6972]
+center_map = [00.000, -000.0000]
 # Default map zoom level
-map_zoom = 5
+map_zoom = 10
 
 # Passphrase calculation config. If REMOTE_CONFIG is not used in your DMR server config
 # (hblink.cfg), then the values in section [USER_MANAGER] MUST match the values below.
@@ -56,20 +56,20 @@ map_zoom = 5
 # These config options affect the generation of user passphrases.
 
 # Set to a value between 1 - 99. This value is used in the normal calculation.
-append_int = 1
+append_int = 12
 
 # Set to a value between 1 - 99. This value is used for compromised passphrases.
-burn_int = 5
+burn_int = 59
 
 # Set to a value between 1 - 99 This value is used in the normal calculation.
-extra_int_1 = 5
+extra_int_1 = 43
 
 # Set to a value between 1 - 99 This value is used in the normal calculation.
-extra_int_2 = 8
+extra_int_2 = 82
 
 # Set to a length of about 10 characters.
-extra_1 = 'TeSt'
-extra_2 = 'DmR4'
+extra_1 = 'HbNT'
+extra_2 = 'WrkS'
 
 # Shorten generated passphrases
 use_short_passphrase = True

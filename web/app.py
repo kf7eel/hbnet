@@ -56,7 +56,7 @@ from cryptography.fernet import Fernet
 from flaskext.markdown import Markdown
 
 peer_locations = {}
-hbnet_version = 'V 09102022'
+hbnet_version = 'V 09242022'
 
 # Query radioid.net for list of IDs
 def get_ids(callsign):
