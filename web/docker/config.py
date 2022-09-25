@@ -5,7 +5,7 @@ Settings for HBNet Web Server.
 # Database options
 # Using SQLite is simple and easiest. Comment out this line and uncomment the MySQL
 # line to use a MySQL/MariaDB server.
-db_location = 'sqlite:////opt/hbnet_web/data/hbnet.sqlite'
+db_location = 'sqlite:////opt/hbnet_web/hbnet.sqlite'
 
 # Uncomment and change this line to use a MySQL DB. It is best to start with a fresh
 # DB without data in it.
@@ -41,6 +41,10 @@ time_format = '%H:%M:%S - %m/%d/%y'
 # Default state for newly created user accounts. Setting to False will require
 # the approval of an admin user before the user can login.
 default_account_state = True
+
+# Allow users to generate and send SMS messages via the web service
+# and API.
+allow_user_sms = False
 
 # Legacy passphrase used in hblink.cfg
 legacy_passphrase = 'passw0rd'
