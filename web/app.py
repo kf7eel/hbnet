@@ -813,7 +813,10 @@ By using this service, you agree not to do anything malicious. You agree to use 
             content = ''
             # try:
             l_news = News.query.order_by(News.time.desc()).first()
-            return render_template('index.html', news = Markup(content), content_block = Markup(home_text.data), text = l_news.text[:300] + '...', subject = l_news.subject, date = l_news.date, news_id = l_news.id)
+            dots = ''
+            if len(l_news.text) > 300:
+                dots = '...'
+            return render_template('index.html', news = Markup(content), content_block = Markup(home_text.data), text = l_news.text[:300] + dots, subject = l_news.subject, date = l_news.date, news_id = l_news.id)
             # except:
             #     content = ''
             #     return render_template('index.html', content_block = Markup(home_text.data))
@@ -824,7 +827,7 @@ By using this service, you agree not to do anything malicious. You agree to use 
     def tos_page():
         tos_text = Pages.query.filter_by(id=2).first()
         
-        return render_template('generic.html', markup_content = tos_text.data)
+        return render_template('markdown_generic.html', markup_content = tos_text.data)
 
     @app.route('/page/<id>')
     def other_page(id):
