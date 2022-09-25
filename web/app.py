@@ -7599,10 +7599,10 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
                     mailbox_add(hblink_req['src_callsign'], hblink_req['dst_callsign'], hblink_req['message'], hblink_req['src_dmr_id'], hblink_req['dst_dmr_id'], hblink_req['mb_add'], hblink_req['system_name'])
                     response = 'rcvd'
 
-            elif 'ss_update' in hblink_req:
-                    del_ss(hblink_req['dmr_id'])
-                    ss_add(hblink_req['callsign'], str(hblink_req['message']), hblink_req['dmr_id'])
-                    response = 'rcvd'
+            # elif 'ss_update' in hblink_req:
+            #         del_ss(hblink_req['dmr_id'])
+            #         ss_add(hblink_req['callsign'], str(hblink_req['message']), hblink_req['dmr_id'])
+            #         response = 'rcvd'
             elif 'unit_table' in hblink_req:
 ##                    del_unit_table(hblink_req['unit_table'])
                 try:
@@ -7676,20 +7676,20 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
                             sms_que_add('', '', 0, hblink_req['rf_id'], 'motorola', 'unit', hblink_req['sms_cmd'], '', tp.content)
                         except:
                             sms_que_add('', '', 0, hblink_req['rf_id'], 'motorola', 'unit', hblink_req['sms_cmd'], '', 'Query not found or other error.')
-                    elif hblink_req['cmd'][:4] == '*RSS':
-                        try:
-                            try:
-                                retr = int(split_cmd[1])
-                            except:
-                                retr = split_cmd[1]
+                    # elif hblink_req['cmd'][:4] == '*RSS':
+                    #     try:
+                    #         try:
+                    #             retr = int(split_cmd[1])
+                    #         except:
+                    #             retr = split_cmd[1]
 
-                            if type(retr) == int:
-                                ss = Social.query.filter_by(dmr_id=int(split_cmd[1])).order_by(Social.time.desc()).first()
-                            elif type(retr) == str:
-                                ss = Social.query.filter_by(callsign=str(split_cmd[1]).upper()).order_by(Social.time.desc()).first()
-                            sms_que_add('', '', 0, hblink_req['rf_id'], 'motorola', 'unit', hblink_req['sms_cmd'], '', 'Last: ' + ss.message)
-                        except:
-                            sms_que_add('', '', 0, hblink_req['rf_id'], 'motorola', 'unit', hblink_req['sms_cmd'], '', 'Not found or other error')
+                    #         if type(retr) == int:
+                    #             ss = Social.query.filter_by(dmr_id=int(split_cmd[1])).order_by(Social.time.desc()).first()
+                    #         elif type(retr) == str:
+                    #             ss = Social.query.filter_by(callsign=str(split_cmd[1]).upper()).order_by(Social.time.desc()).first()
+                    #         sms_que_add('', '', 0, hblink_req['rf_id'], 'motorola', 'unit', hblink_req['sms_cmd'], '', 'Last: ' + ss.message)
+                    #     except:
+                    #         sms_que_add('', '', 0, hblink_req['rf_id'], 'motorola', 'unit', hblink_req['sms_cmd'], '', 'Not found or other error')
                             
                     elif hblink_req['cmd'][:4] == '*RBB':
                         try:

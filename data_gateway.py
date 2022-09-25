@@ -448,28 +448,28 @@ def send_mb(CONFIG, _dst_callsign, _src_callsign, message, _dst_dmr_id, _src_dmr
         logger.error('Config server unreachable')
 
         
-def send_ss(CONFIG, callsign, message, dmr_id):
-    if LOCAL_CONFIG['WEB_SERVICE']['REMOTE_CONFIG_ENABLED'] == True:
-        user_man_url = CONFIG['WEB_SERVICE']['URL']
-        shared_secret = str(sha256(CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
-        sms_data = {
-        'ss_update': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
-        'secret':shared_secret,
-        'callsign': callsign,
-        'message' : message,
-        'dmr_id' : dmr_id,
+# def send_ss(CONFIG, callsign, message, dmr_id):
+#     if LOCAL_CONFIG['WEB_SERVICE']['REMOTE_CONFIG_ENABLED'] == True:
+#         user_man_url = CONFIG['WEB_SERVICE']['URL']
+#         shared_secret = str(sha256(CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
+#         sms_data = {
+#         'ss_update': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+#         'secret':shared_secret,
+#         'callsign': callsign,
+#         'message' : message,
+#         'dmr_id' : dmr_id,
 
-        }
-        json_object = json.dumps(sms_data, indent = 4)
+#         }
+#         json_object = json.dumps(sms_data, indent = 4)
         
-        try:
-            req = requests.post(user_man_url, data=json_object, headers={'Content-Type': 'application/json'})
-            logger.debug('Social Status sent.')
-    ##        resp = json.loads(req.text)
-    ##        print(resp)
-    ##        return resp['rules']
-        except requests.ConnectionError:
-            logger.error('Config server unreachable')
+#         try:
+#             req = requests.post(user_man_url, data=json_object, headers={'Content-Type': 'application/json'})
+#             logger.debug('Social Status sent.')
+#     ##        resp = json.loads(req.text)
+#     ##        print(resp)
+#     ##        return resp['rules']
+#         except requests.ConnectionError:
+#             logger.error('Config server unreachable')
 
 def send_unit_table(CONFIG, _data):
     user_man_url = CONFIG['WEB_SERVICE']['URL']
@@ -882,13 +882,13 @@ def process_sms(_rf_src, sms, call_type, system_name):
     parse_sms = sms.split(' ')
     logger.debug(parse_sms)
 ##    logger.debug(call_type)
-    # Social Status function
-    if '*SS' == parse_sms[0]:
-        s = ' '
-        post = s.join(parse_sms[1:])
-        send_ss(CONFIG, str(get_alias(int_id(_rf_src), subscriber_ids)), post, int_id(_rf_src))
+    # # Social Status function
+    # if '*SS' == parse_sms[0]:
+    #     s = ' '
+    #     post = s.join(parse_sms[1:])
+    #     send_ss(CONFIG, str(get_alias(int_id(_rf_src), subscriber_ids)), post, int_id(_rf_src))
     # Offload some commands onto the HBNet web service
-    elif '*RSS' in parse_sms[0] or '*RBB' in parse_sms[0] or '*RMB' in parse_sms[0]:
+    if '*RSS' in parse_sms[0] or '*RBB' in parse_sms[0] or '*RMB' in parse_sms[0]:
         send_sms_cmd(CONFIG, int_id(_rf_src), sms)
     # Tiny Page query
     elif '?' in parse_sms[0]:
