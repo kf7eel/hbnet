@@ -52,7 +52,7 @@ legacy_passphrase = 'passw0rd'
 # Coordinates to center map over
 center_map = [00.000, -000.0000]
 # Default map zoom level
-map_zoom = 10
+map_zoom = 1
 
 # Passphrase calculation config. If REMOTE_CONFIG is not used in your DMR server config
 # (hblink.cfg), then the values in section [USER_MANAGER] MUST match the values below.
