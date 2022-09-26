@@ -24,6 +24,8 @@ COPY data_gateway.py .
 COPY docker/hbnet/hbnet.cfg ./config/
 COPY docker/hbnet/rules.py ./config/
 COPY hotspot_proxy_v2.py .
+COPY subscriber_ids.json .
+copy peer_ids.json .
 #Install Python3.9 and dependencies
 RUN apt-get -y update; apt-get -y upgrade; apt-get -y install --no-install-recommends python3.9-dev python3-pip python3.9 build-essential net-tools iputils-ping wget; apt-get clean; rm -rf /var/lib/apt/lists/*
 

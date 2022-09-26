@@ -21,6 +21,8 @@ COPY LICENSE.txt .
 COPY data_gateway.py .
 COPY data_gateway_local_commands.py .
 COPY docker/data_gateway/data_gateway.cfg ./config/
+COPY subscriber_ids.json .
+copy peer_ids.json .
 #Install Python3.9 and dependencies
 RUN apt-get -y update; apt-get -y upgrade; apt-get -y install --no-install-recommends python3.9-dev python3-pip python3.9 build-essential net-tools iputils-ping wget; apt-get clean; rm -rf /var/lib/apt/lists/*
 
