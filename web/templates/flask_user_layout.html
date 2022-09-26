@@ -158,7 +158,11 @@
         <a class="nav-link" href="{{url}}/mail/{{ current_user.username or current_user.email }}"><i class="bi bi-mailbox"></i> <strong>Mailbox</strong> </a>
       </li>
 -->
-        
+{% if global_config['mode'] == 'FULL' or global_config['mode'] == 'DMR_ONLY' %}
+<li class="nav-item">
+  <a class="nav-link" href="{{url}}/generate_passphrase"><i class="bi bi-info-square"></i> Server(s) </a>
+</li>
+{% endif %}
             <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="features_menu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
            <i class="bi bi-arrow-down-square"></i> Features 
@@ -170,9 +174,6 @@
             <li><a class="dropdown-item" href="{{url}}/mail/{{ current_user.username or current_user.email }}"><i class="bi bi-mailbox"></i> Mailbox </a></li>
     {% endif %}
             <li><a class="dropdown-item" href="{{url}}/discussion"><i class="bi bi-chat-right-quote"></i> Discussion </a></li>
-    {% if global_config['mode'] == 'FULL' or global_config['mode'] == 'DMR_ONLY' %}
-            <li><a class="dropdown-item" href="{{url}}/generate_passphrase"><i class="bi bi-info-square"></i> Server(s) </a></li>
-    {% endif %}
           </ul>
         </li>
 
