@@ -15,7 +15,7 @@ services:
        # Path to config.py
        - ./hbnet/web_service/config.py:/opt/hbnet_web/config.py
        # Persist SQLIte data
-       - ./hbnet/web_service/hbnet_prod.sqlite:/opt/hbnet_web/hbnet.sqlite:rw
+       - ./hbnet/web_service/hbnet.sqlite:/opt/hbnet_web/hbnet.sqlite:rw
        # NGINX logs
        - ./hbnet/log/web_service:/var/log/nginx:rw
        # Non SSL config
@@ -67,6 +67,34 @@ services:
       - ./hbnet/hbnet/hbnet.cfg:/opt/hbnet/config/hbnet.cfg
       # HBNet rules location
       - ./hbnet/hbnet/rules.py:/opt/hbnet/config/rules.py
+       # Persistent data
+#       - ./hb_data/data/hbnet:/opt/hbnet/data:rw
+ ##      # Log file
+ ##      - ./hbnet/log/hbnet:/opt/hbnet/log:rw
+    depends_on:
+      - "hbnet_web_service"
+    networks:
+      - hbnet_internal
+    restart: always
+
+  hbnet_echo:
+    container_name: hbnet_echo
+    image: kf7eel/hbnet_echo:latest
+    hostname: hbnet_echo
+    build:
+        dockerfile: ./Dockerfile.hbnet_echo
+        context: .
+    #ports:
+      # Port outside container:Port inside container
+      # Port for clients
+     # - 52000:52000/udp
+      # Reporting port for hbmon
+      #- 4321:4321
+    #volumes:
+      # HBNet Configuration file location
+     # - ./hbnet/hbnet/hbnet.cfg:/opt/hbnet/config/hbnet.cfg
+      # HBNet rules location
+     # - ./hbnet/hbnet/rules.py:/opt/hbnet/config/rules.py
        # Persistent data
 #       - ./hb_data/data/hbnet:/opt/hbnet/data:rw
  ##      # Log file
