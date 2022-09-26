@@ -56,7 +56,7 @@ from cryptography.fernet import Fernet
 from flaskext.markdown import Markdown
 
 peer_locations = {}
-hbnet_version = 'V 09242022'
+hbnet_version = 'V 09262022'
 
 # Query radioid.net for list of IDs
 def get_ids(callsign):
@@ -1269,7 +1269,7 @@ By using this service, you agree not to do anything malicious. You agree to use 
                     #print(script_links)
                     content = content + '''\n
             <div class="card " style="text-align: center;">
-  <div class="card-header"><h4><a href="/ss/''' + str(i[0]) + '''">''' + str(i[0]) + '''</a></h4></div>
+  <div class="card-header"><h4><a href="https://radioid.net/database/view?id=''' + str(i[0]) + '''">''' + str(i[0]) + '''</a></h4></div>
   <div class="card-body" style="max-width:300px; word-wrap:break-word; text-align: center;">MMDVM Passphrase:
   <pre><strong>''' + str(gen_passphrase(int(i[0]))) + '''</strong></pre>
   <hr />
@@ -1285,7 +1285,7 @@ By using this service, you agree not to do anything malicious. You agree to use 
                     #print(script_links)
                     content = content + '''\n
 <div class="card" style="text-align: center;">
-  <div class="card-header"><h4><a href="/ss/''' + str(i[0]) + '''">''' + str(i[0]) + '''</a></h4></div>
+  <div class="card-header"><h4><a href="https://radioid.net/database/view?id=''' + str(i[0]) + '''">''' + str(i[0]) + '''</a></h4></div>
   <div class="card-body" style="max-width:300px; word-wrap:break-word; text-align: center;">MMDVM Passphrase:
   <pre><strong>''' + str(gen_passphrase(int(i[0]))) + '''</strong></pre>
   <hr />
@@ -1297,7 +1297,7 @@ By using this service, you agree not to do anything malicious. You agree to use 
                 elif i[1] == '':
                     content = content + '''
 <div class="card" style="text-align: center;">
-  <div class="card-header"><h4><a href="/ss/''' + str(i[0]) + '''">''' + str(i[0]) + '''</a></h4></div>
+  <div class="card-header"><h4><a href="https://radioid.net/database/view?id=''' + str(i[0]) + '''">''' + str(i[0]) + '''</a></h4></div>
   <div class="card-body" style="max-width:300px; word-wrap:break-word; text-align: center;">MMDVM Passphrase:
   <pre><strong>''' + legacy_passphrase + '''</strong></pre>
   <hr />
@@ -1309,7 +1309,7 @@ By using this service, you agree not to do anything malicious. You agree to use 
                 else:
                     content = content + '''
   <div class="card" style="text-align: center;">
-  <div class="card-header"><h4><a href="/ss/''' + str(i[0]) + '''">''' + str(i[0]) + '''</a></h4></div>
+  <div class="card-header"><h4><a href="https://radioid.net/database/view?id=''' + str(i[0]) + '''">''' + str(i[0]) + '''</a></h4></div>
   <div class="card-body" style="max-width:300px; word-wrap:break-word; text-align: center;">MMDVM Passphrase:
   <pre><strong>''' + str(i[1]) + '''</strong></pre>
   <hr />
@@ -2751,6 +2751,9 @@ LOG_NAME: ''' + server + '''
         else:
             content = '''
       <h1 style="text-align: center;">APRS Settings</h1>
+
+        <h4 style="text-align: center;">Changes may take up to 10 minutes before they take effect.</h4>
+
 
 <p style="text-align: center;"><br /> Your API key: <strong>''' + str(user_aprs.api_keys)[1:-1] + '''</strong> </p>
 
