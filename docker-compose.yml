@@ -15,7 +15,7 @@ services:
        # Path to config.py
        - ./hbnet/web_service/config.py:/opt/hbnet_web/config.py
        # Persist SQLIte data
-       - ./hbnet/web_service/data:/opt/hbnet_web/data:rw
+       - ./hbnet/web_service/hbnet_prod.sqlite:/opt/hbnet_web/hbnet.sqlite:rw
        # NGINX logs
        - ./hbnet/log/web_service:/var/log/nginx:rw
        # Non SSL config
