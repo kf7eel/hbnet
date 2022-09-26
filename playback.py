@@ -212,7 +212,15 @@ if __name__ == '__main__':
     peer_ids, subscriber_ids, talkgroup_ids = mk_aliases(CONFIG)
         
     # INITIALIZE THE REPORTING LOOP
-    report_server = config_reports(CONFIG, reportFactory)    
+    report_server = config_reports(CONFIG, reportFactory)
+
+    # Create folder so hbnet.py can access list PEER connections
+    print(CONFIG['LOGGER']['LOG_NAME'])
+    if Path('/tmp/' + (CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/')).exists():
+        pass
+    else:
+        Path('/tmp/' + (CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/')).mkdir()
+    
     
     # HBlink instance creation
     logger.info('HBlink \'playback.py\' (c) 2017-2019 Cort Buffington, N0MJS & Mike Zingman, N4IRR -- SYSTEM STARTING...')
