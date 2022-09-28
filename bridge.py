@@ -118,13 +118,14 @@ __email__      = 'kf7eel@qsl.net'
 ####        return config.build_config(cli_file)
 
 
-def send_unit_table(CONFIG, _data):
+def send_unit_table(CONFIG, _data, _bridge_data):
     user_man_url = CONFIG['WEB_SERVICE']['URL']
     shared_secret = str(sha256(CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     sms_data = {
     'unit_table': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
     'secret':shared_secret,
     'data': str(_data),
+    'bridge_data': str(_bridge_data),
 
     }
     json_object = json.dumps(sms_data, indent = 4)
@@ -592,7 +593,7 @@ def rule_timer_loop(unit_flood_time):
 
     for unit in remove_list:
         del UNIT_MAP[unit]
-    send_unit_table(CONFIG, UNIT_MAP)
+    send_unit_table(CONFIG, UNIT_MAP, BRIDGES)
 
     logger.debug('Removed unit(s) %s from UNIT_MAP', remove_list)
 

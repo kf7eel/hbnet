@@ -1158,6 +1158,37 @@ By using this service, you agree not to do anything malicious. You agree to use 
     def gateway_wiz_page(add_server):
         return render_template('data_gateway_wizard.html', server = add_server)
 
+    @app.route('/bridge_status/<server>/<system>')
+    def bridge_tg_status(server, system):
+        server_bridges = Misc.query.filter_by(field_1='bridge_table_' + server).first()
+        BRIDGES = ast.literal_eval(server_bridges.field_2)
+        table_data = ''
+        for _bridge in BRIDGES:
+            for e in BRIDGES[_bridge]:
+                if system == e['SYSTEM']:
+##                   print(e)
+                   print(type(e['TIMER']))
+                   print(datetime.datetime.fromtimestamp(e['TIMER']))
+                   print()
+                   if time.time() <= e['TIMER']:
+                       exp = '''
+<div class="alert alert-Success">
+  <strong>On</strong> <br /> ''' + str(datetime.datetime.fromtimestamp(e['TIMER'])).strftime(time_format) + '''
+</div>
+'''
+                   elif time.time() > e['TIMER']:
+                       exp = '''
+<div class="alert alert-danger">
+  <strong>Off</strong>
+</div>
+'''
+                   table_data = table_data + '<tr><td>' + _bridge + '</td><td>' + str(int_id(e['TGID'])) + '</td><td>' + exp + '</td></tr>'
+                   
+##                   print(str((timedelta(seconds=e['TIMER']) + datetime.datetime.fromtimestamp(e['TIMER'])).strftime(time_format)))
+                   
+             
+        return render_template('bridge_status.html', table_data = Markup(table_data), server = server, system = system)
+
     @app.route('/generate_passphrase/pi-star', methods = ['GET'])
     @login_required
     def gen_pi_star():
@@ -1235,6 +1266,17 @@ By using this service, you agree not to do anything malicious. You agree to use 
             if i.ip == '':
                 pass
             else:
+                tool_menu = '''
+ <div class="dropdown">
+  <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+    Tools
+  </button>
+  <ul class="dropdown-menu">
+  <li><a class="dropdown-item" href="/talkgroups/''' + i.name + '''">Available Talkgroups</a></li>
+    <li><a class="dropdown-item" href="''' + i.dash_url + '''">Dashboard</a></li>
+  </ul>
+</div> 
+'''
                 svr_content = svr_content + '''
 <div class="card">
   <div class="card-header" style="text-align: center;"><h3>''' + i.name + '''</h3></div>
@@ -1243,10 +1285,7 @@ By using this service, you agree not to do anything malicious. You agree to use 
   ''' + svr_status + '''
     <div style="max-width:200px; word-wrap:break-word; text-align: center;">''' + i.public_notes + '''</div>
     <p>&nbsp;</p>
-    <a href="/talkgroups/''' + i.name + '''"><button type="button" class="btn btn-primary btn-block" >Available Talkgroups</button></a>
-    <hr />
-    <a href="''' + i.dash_url + '''"><button  type="button" class="btn btn-success btn-block" >Dashboard</button></a>
-
+''' + tool_menu + '''
   </div>
 </div>
 
@@ -5312,7 +5351,6 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
 '''
             for s in all_s:
                 tool_menu = '''
-
  <div class="dropdown">
   <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
     Tools
@@ -5322,7 +5360,6 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
     <li><a class="dropdown-item" href="/manage_servers?server=''' + s.name + '''&server_command=restart">Restart Server</a></li>
   </ul>
 </div> 
-
 '''
                 try:
                     if time.time() - ping_list[s.name] < 30:
@@ -7660,9 +7697,12 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
                 try:
                     delete_misc_field_1('unit_table_' + hblink_req['unit_table'])
                     misc_add('unit_table_' + hblink_req['unit_table'], str(hblink_req['data']), '', '', 0, 0, 0, 0, False, False)
+                    delete_misc_field_1('bridge_table_' + hblink_req['unit_table'])
+                    misc_add('bridge_table_' + hblink_req['unit_table'], str(hblink_req['bridge_data']), '', '', 0, 0, 0, 0, False, False)
                 except:
                     print('entry error')
                     misc_add('unit_table_' + hblink_req['unit_table'], str(hblink_req['data']), '', '', 0, 0, 0, 0, False, False)
+                    misc_add('bridge_table_' + hblink_req['unit_table'], str(hblink_req['bridge_data']), '', '', 0, 0, 0, 0, False, False)
 ##                    unit_table_add(hblink_req['data'])
                 response = 'rcvd'
             elif 'known_services' in hblink_req:
