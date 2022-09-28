@@ -76,6 +76,7 @@ from setproctitle import setproctitle
 
 import copy
 from pathlib import Path
+import sys
 
 
 
@@ -149,9 +150,15 @@ def ping(CONFIG):
     
     try:
         req = requests.post(user_man_url, data=json_object, headers={'Content-Type': 'application/json'})
-##        resp = json.loads(req.text)
-##        print(resp)
-##        return resp['rules']
+        resp = json.loads(req.text)
+        logger.debug(resp)
+        for c in resp['commands']:
+            if c == 'restart':
+                print('restart')
+                print(sys.argv)
+                os.execv(__file__, sys.argv)
+           
+    ##        return resp['rules']
     except requests.ConnectionError:
         logger.error('Config server unreachable')
 ##        return config.build_config(cli_file)

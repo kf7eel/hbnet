@@ -56,7 +56,7 @@ from cryptography.fernet import Fernet
 from flaskext.markdown import Markdown
 
 peer_locations = {}
-hbnet_version = 'V 09262022'
+hbnet_version = 'V 09282022'
 
 # Query radioid.net for list of IDs
 def get_ids(callsign):
@@ -4771,8 +4771,30 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
     @login_required
     @roles_required('Admin')
     def edit_server_db():
+        if request.args.get('server_command'):
+            try:
+                cl = Misc.query.filter_by(field_1=request.args.get('server') + '_command_list').first()
+                cmd_lst = ast.literal_eval(cl.field_2)
+                print('--')
+                print(cmd_lst)
+            except:
+                cmd_lst = []
+                misc_add(request.args.get('server') + '_command_list', str(cmd_lst), '', '', 0, 0, 0, 0, False, False)
+                
+            if request.args.get('server_command') == 'restart':
+                cmd_lst.append('restart')
+            elif request.args.get('server_command') == '2':
+                cmd_lst.append('2')
+            print(cmd_lst)
+            content = '''<h3 style="text-align: center;">Command qued.</h3>
+<p style="text-align: center;">Redirecting in 3 seconds.</p>
+<meta http-equiv="refresh" content="3; URL=/manage_servers" />'''
+            misc_edit_field_1(request.args.get('server') + '_command_list', str(cmd_lst), '', '', 0, 0, 0, 0, False, False) 
+##            misc_add(request.args.get('server') + '_command_list', str(cmd_lst), '', '', 0, 0, 0, 0, False, False)
+            return render_template('flask_user_layout.html', markup_content = Markup(content))
+                
         # Edit server
-        if request.args.get('save_mode'):# == 'new' and request.form.get('server_name'):
+        elif request.args.get('save_mode'):# == 'new' and request.form.get('server_name'):
 ##            _port = int(request.form.get('server_port'))
             _global_ping_time = int(request.form.get('ping_time'))
             _global_max_missed = int(request.form.get('max_missed'))
@@ -5289,27 +5311,40 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
 
 '''
             for s in all_s:
+                tool_menu = '''
+
+ <div class="dropdown">
+  <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+    Tools
+  </button>
+  <ul class="dropdown-menu">
+  <li><a class="dropdown-item" href="/unit/''' + s.name + '''">UNIT Table</a></li>
+    <li><a class="dropdown-item" href="/manage_servers?server=''' + s.name + '''&server_command=restart">Restart Server</a></li>
+  </ul>
+</div> 
+
+'''
                 try:
                     if time.time() - ping_list[s.name] < 30:
                         svr_status = '''<div class="alert alert-success">
           <a href="manage_servers?edit_server=''' + str(s.name) + '''"><button type="button" class="btn btn-success">''' + str(s.name) + '''</button></a>
-           \n<a href="/unit/''' + s.name + '''"><button type="button" class="btn btn-primary">View UNIT Table</button></a></div>'''
+           \n''' + tool_menu + '''</div>'''
                     elif time.time() - ping_list[s.name] <= 300:
                         svr_status = '''<div class="alert alert-warning">
           <a href="manage_servers?edit_server=''' + str(s.name) + '''"><button type="button" class="btn btn-warning">''' + str(s.name) + '''</button></a>
-           \n<a href="/unit/''' + s.name + '''"><button type="button" class="btn btn-primary">View UNIT Table</button></a></div>'''
+           \n''' + tool_menu + '''</div>'''
                     elif time.time() - ping_list[s.name] > 300:
                         svr_status = '''<div class="alert alert-danger">
           <a href="manage_servers?edit_server=''' + str(s.name) + '''"><button type="button" class="btn btn-danger">''' + str(s.name) + '''</button></a>
-           \n<a href="/unit/''' + s.name + '''"><button type="button" class="btn btn-primary">View UNIT Table</button></a></div>'''
+           \n''' + tool_menu + '''</div>'''
                     else:
                         svr_status = '''<div class="alert alert-warning">
           <a href="manage_servers?edit_server=''' + str(s.name) + '''"><button type="button" class="btn btn-warning">''' + str(s.name) + '''</button></a>
-           \n<a href="/unit/''' + s.name + '''"><button type="button" class="btn btn-primary">View UNIT Table</button></a></div>'''
+           \n''' + tool_menu + '''</div>'''
                 except:
                     svr_status = '''<div class="alert alert-warning">
           <a href="manage_servers?edit_server=''' + str(s.name) + '''"><button type="button" class="btn btn-warning">''' + str(s.name) + '''</button></a>
-           \n<a href="/unit/''' + s.name + '''"><button type="button" class="btn btn-primary">View UNIT Table</button></a></div>'''
+           \n''' + tool_menu + '''</div>'''
                 p_list = p_list + '''
 <tr>
 <td style="text-align: center;">''' + svr_status + '''</td>
@@ -7319,6 +7354,7 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
                     usr_nm = ''
             except:
                 usr_lnk = ''
+            print(usr_link)
             content = content + '''
 <tr>
   <td><p><a href="https://www.radioid.net/database/view?id=''' + str(int_id(i[0])) + '''" target="_blank" rel="noopener"><button type="button" class="btn btn-warning">''' + str(int_id(i[0])) + '''</button></a><br /><br />''' + usr_lnk + '''</td>
@@ -7486,7 +7522,17 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
                     ping_list = ast.literal_eval(pl.field_2)
                     ping_list[hblink_req['ping']] = time.time()
                     misc_edit_field_1('ping_list', str(ping_list), '', '', 0, 0, 0, 0, True, True)
-                    response = ''
+                    try:
+                        cl = Misc.query.filter_by(field_1=hblink_req['ping'] + '_command_list').first()
+                        cmd_lst = ast.literal_eval(cl.field_2)
+                        delete_misc_field_1(hblink_req['ping'] + '_command_list')
+
+                    except:
+                        cmd_lst = []
+                        
+                    response = jsonify(
+                                    commands=cmd_lst
+                                    )
             except:
                 pass
             if 'login_id' in hblink_req and 'login_confirmed' not in hblink_req:

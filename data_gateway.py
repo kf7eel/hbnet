@@ -343,12 +343,17 @@ def ping(CONFIG):
     'secret':shared_secret
     }
     json_object = json.dumps(ping_data, indent = 4)
-    
     try:
         req = requests.post(user_man_url, data=json_object, headers={'Content-Type': 'application/json'})
-        logger.debug('Web service ping')
-##        resp = json.loads(req.text)
-##        print(resp)
+        resp = json.loads(req.text)
+        logger.debug(resp)
+        for c in resp['commands']:
+            if c == 'restart':
+                print('restart')
+                print(sys.argv)
+                os.execv(__file__, sys.argv)
+
+    ##        return resp['rules']
 ##        return resp['rules']
     except requests.ConnectionError:
         logger.error('Config server unreachable')
