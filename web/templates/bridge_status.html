@@ -1,0 +1,28 @@
+{% extends 'flask_user/_public_base.html' %}
+{% block content %}
+<p>&nbsp;</p>
+
+<div class="row">
+
+<h1 style="text-align: center;">{{server}}/{{system}}</h1>
+<br />
+<br />
+<h4 style="text-align: center;">Updated every minute.</h4>
+
+
+<table data-toggle="table" data-pagination="true" data-search="true" >
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>TG</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+{{table_data}}
+</tbody>
+</table>
+
+</div>
+
+{% endblock %}
