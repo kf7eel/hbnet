@@ -1158,36 +1158,85 @@ By using this service, you agree not to do anything malicious. You agree to use 
     def gateway_wiz_page(add_server):
         return render_template('data_gateway_wizard.html', server = add_server)
 
-    @app.route('/bridge_status/<server>/<system>')
+    @app.route('/bridge_status/<server>/<system>', methods=['GET', 'POST'])
     def bridge_tg_status(server, system):
-        server_bridges = Misc.query.filter_by(field_1='bridge_table_' + server).first()
-        BRIDGES = ast.literal_eval(server_bridges.field_2)
-        table_data = ''
-        for _bridge in BRIDGES:
-            for e in BRIDGES[_bridge]:
-                if system == e['SYSTEM']:
-##                   print(e)
-                   print(type(e['TIMER']))
-                   print(datetime.datetime.fromtimestamp(e['TIMER']))
-                   print()
-                   if time.time() <= e['TIMER']:
-                       exp = '''
-<div class="alert alert-Success">
-  <strong>On</strong> <br /> ''' + str(datetime.datetime.fromtimestamp(e['TIMER'])).strftime(time_format) + '''
-</div>
-'''
-                   elif time.time() > e['TIMER']:
-                       exp = '''
-<div class="alert alert-danger">
-  <strong>Off</strong>
-</div>
-'''
-                   table_data = table_data + '<tr><td>' + _bridge + '</td><td>' + str(int_id(e['TGID'])) + '</td><td>' + exp + '</td></tr>'
-                   
-##                   print(str((timedelta(seconds=e['TIMER']) + datetime.datetime.fromtimestamp(e['TIMER'])).strftime(time_format)))
-                   
-             
-        return render_template('bridge_status.html', table_data = Markup(table_data), server = server, system = system)
+        if request.args.get('change'):
+##            connected = Misc.query.filter_by(field_1='user_system_table_' + server).first()
+##            connected_list = ast.literal_eval(connected.field_2)
+####            print(connected_list[system])
+##            for i in connected_list[system]:
+##                print(i)
+##                if str(current_user.username).upper() == i.upper():
+##                    print('yay')
+####            if current_user.username 
+            try:
+##                if current_user.has_roles('Admin'):
+                cl = Misc.query.filter_by(field_1=request.args.get('server') + '_command_list').first()
+                cmd_lst = ast.literal_eval(cl.field_2)
+##                print('--')
+                print(cmd_lst)
+            except:
+                cmd_lst = []
+                misc_add(request.args.get('server') + '_command_list', str(cmd_lst), '', '', 0, 0, 0, 0, False, False)
+                
+##            if request.args.get('server_command') == 'restart':
+##                cmd_lst.append('restart')
+##            elif request.args.get('server_command') == '2':
+##                cmd_lst.append('2')
+            cmd_lst.append(request.args.get('change'))
+##            print(cmd_lst)
+            content = '''<h3 style="text-align: center;">Changes qued.</h3>
+<p style="text-align: center;">Redirecting in 3 seconds.</p>
+<meta http-equiv="refresh" content="3; URL=/bridge_status/''' + server + '''/''' + system + '''" />'''
+            misc_edit_field_1(request.args.get('server') + '_command_list', str(cmd_lst), '', '', 0, 0, 0, 0, False, False) 
+##            misc_add(request.args.get('server') + '_command_list', str(cmd_lst), '', '', 0, 0, 0, 0, False, False)
+            return render_template('flask_user_layout.html', markup_content = Markup(content))
+        else:
+            connected = Misc.query.filter_by(field_1='user_system_table_' + server).first()
+            connected_list = ast.literal_eval(connected.field_2)
+##            print(connected_list[system])
+            for i in connected_list[system]:
+                print(i)
+                if str(current_user.username).upper() == i.upper() or current_user.has_roles('Admin'):
+                    server_bridges = Misc.query.filter_by(field_1='bridge_table_' + server).first()
+                    BRIDGES = ast.literal_eval(server_bridges.field_2)
+                    table_data = ''
+                    for _bridge in BRIDGES:
+                        for e in BRIDGES[_bridge]:
+                            if system == e['SYSTEM']:
+            ##                   print(e)
+            ##                   print(type(e['TIMER']))
+            ##                   print(datetime.datetime.fromtimestamp(e['TIMER']))
+            ##                   print()
+            ##                   if time.time() <= e['TIMER']:
+        ##                       print(e)
+                               if e['ACTIVE']:
+                                   change_button = '<a href="/bridge_status/' + server + '/' + system + '?server=' + server + '&change=off:' + _bridge + ',' + system + '"><button type="button" class="btn btn-danger">Off</button></a>'
+                                   exp_time = 'Expires: ' + str(datetime.datetime.fromtimestamp(e['TIMER']).strftime(time_format))
+                                   if time.time() > e['TIMER']:
+                                       exp_time = ''
+                                   exp = '''
+            <div class="alert alert-success">
+              <strong>On</strong> <br /> ''' + exp_time + '''
+            </div>
+            '''
+            ##                   elif time.time() > e['TIMER']:
+                               elif not e['ACTIVE']:
+                                   change_button = '<a href="/bridge_status/' + server + '/' + system + '?server=' + server + '&change=on:' + _bridge + ',' + system + '"><button type="button" class="btn btn-success">On</button></a>'
+                                   exp = '''
+            <div class="alert alert-danger">
+              <strong>Off</strong>
+            </div>
+            '''
+                               table_data = table_data + '<tr><td>' + _bridge + '</td><td>' + str(int_id(e['TGID'])) + '</td><td>' + exp + '</td><td>' + change_button + '</td></tr>'
+
+                    return render_template('bridge_status.html', table_data = Markup(table_data), server = server, system = system)
+                else:
+                    content = '''<h3 style="text-align: center;">Not Authorized.</h3>
+<p style="text-align: center;">Redirecting in 3 seconds.</p>
+<meta http-equiv="refresh" content="3; URL=/generate_passphrase" />'''
+##            misc_add(request.args.get('server') + '_command_list', str(cmd_lst), '', '', 0, 0, 0, 0, False, False)
+                    return render_template('flask_user_layout.html', markup_content = Markup(content))
 
     @app.route('/generate_passphrase/pi-star', methods = ['GET'])
     @login_required
@@ -1257,8 +1306,6 @@ By using this service, you agree not to do anything malicious. You agree to use 
                     svr_status = '''<div class="alert alert-warning">
       <strong>Unknown Condition</strong>
        </div> '''
-                    print(ping_list)
-                    print(time.time())
             except:
                 svr_status = '''<div class="alert alert-warning">
       <strong>Unknown</strong>
@@ -1266,6 +1313,25 @@ By using this service, you agree not to do anything malicious. You agree to use 
             if i.ip == '':
                 pass
             else:
+                connected = Misc.query.filter_by(field_1='user_system_table_' + i.name).first()
+                connected_list = ast.literal_eval(connected.field_2)
+##                print(connected_list)
+                clients = '<strong>Self-care: </strong>'
+                for s in connected_list.items():
+                    for t in s[1]:
+                        if str(current_user.username).upper() == t.upper():
+                            clients = clients + '''<a href="/bridge_status/''' + i.name + '''/''' + s[0] + '''"><button type="button" class="btn btn-secondary">''' + s[0] + '''</button></a>\n'''
+##                client_menu = '''
+##<div class="dropdown">
+##  <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+##    Tools
+##  </button>
+##  <ul class="dropdown-menu">
+##  ''' + clients + '''
+##  </ul>
+##</div> 
+##'''
+
                 tool_menu = '''
  <div class="dropdown">
   <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
@@ -1284,6 +1350,8 @@ By using this service, you agree not to do anything malicious. You agree to use 
   <hr />
   ''' + svr_status + '''
     <div style="max-width:200px; word-wrap:break-word; text-align: center;">''' + i.public_notes + '''</div>
+    <p>&nbsp;</p>
+''' + clients + '''
     <p>&nbsp;</p>
 ''' + tool_menu + '''
   </div>
@@ -4820,10 +4888,11 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
                 cmd_lst = []
                 misc_add(request.args.get('server') + '_command_list', str(cmd_lst), '', '', 0, 0, 0, 0, False, False)
                 
-            if request.args.get('server_command') == 'restart':
-                cmd_lst.append('restart')
-            elif request.args.get('server_command') == '2':
-                cmd_lst.append('2')
+##            if request.args.get('server_command') == 'restart':
+##                cmd_lst.append('restart')
+##            elif request.args.get('server_command') == '2':
+##                cmd_lst.append('2')
+            cmd_lst.append(request.args.get('server_command'))
             print(cmd_lst)
             content = '''<h3 style="text-align: center;">Command qued.</h3>
 <p style="text-align: center;">Redirecting in 3 seconds.</p>
@@ -7550,28 +7619,46 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
     @app.route('/svr', methods=['POST'])
     def svr_endpoint():
         hblink_req = request.json
-        print((hblink_req))
+##        print((hblink_req))
         # 'd3967357e0b5788a03a1a61acefa72af8d2dbfe282d8718809f90fcc6f4aca41' = DATA_GATEWAY
         if hblink_req['secret'] in shared_secrets() or hblink_req['secret'] == 'd3967357e0b5788a03a1a61acefa72af8d2dbfe282d8718809f90fcc6f4aca41' and mode == 'DASH_ONLY':
-            try:
-                if hblink_req['ping']:
-                    pl = Misc.query.filter_by(field_1='ping_list').first()
-                    ping_list = ast.literal_eval(pl.field_2)
-                    ping_list[hblink_req['ping']] = time.time()
-                    misc_edit_field_1('ping_list', str(ping_list), '', '', 0, 0, 0, 0, True, True)
-                    try:
-                        cl = Misc.query.filter_by(field_1=hblink_req['ping'] + '_command_list').first()
-                        cmd_lst = ast.literal_eval(cl.field_2)
-                        delete_misc_field_1(hblink_req['ping'] + '_command_list')
+##            try:
+##            print(hblink_req)
+            if hblink_req['mode'] == 'ping':
+                print(hblink_req['user_systems'])
+                try:
+                    misc_edit_field_1('bridge_table_' + hblink_req['server'], str(hblink_req['bridge_data']), '', '', 0, 0, 0, 0, False, False)
+                    misc_edit_field_1('user_system_table_' + hblink_req['server'], str(hblink_req['user_systems']), '', '', 0, 0, 0, 0, False, False)
+                    
+##                    delete_misc_field_1('bridge_table_' + hblink_req['ping'])
+                   
+##                       delete_misc_field_1('user_system_table_' + hblink_req['ping'])
+                   
+##                       misc_add('bridge_table_' + hblink_req['ping'], str(hblink_req['bridge_data']), '', '', 0, 0, 0, 0, False, False)
+                   
+##                       misc_add('user_system_table_' + hblink_req['ping'], str(hblink_req['bridge_data']), '', '', 0, 0, 0, 0, False, False)
+##                       print('responsa')
+                except:
+                    misc_add('bridge_table_' + hblink_req['server'], str(hblink_req['bridge_data']), '', '', 0, 0, 0, 0, False, False)
+                    misc_add('user_system_table_' + hblink_req['server'], str(hblink_req['user_systems']), '', '', 0, 0, 0, 0, False, False)
+                
+                pl = Misc.query.filter_by(field_1='ping_list').first()
+                ping_list = ast.literal_eval(pl.field_2)
+                ping_list[hblink_req['server']] = time.time()
+                misc_edit_field_1('ping_list', str(ping_list), '', '', 0, 0, 0, 0, True, True)
+                try:
+                    cl = Misc.query.filter_by(field_1=hblink_req['server'] + '_command_list').first()
+                    cmd_lst = ast.literal_eval(cl.field_2)
+                    delete_misc_field_1(hblink_req['server'] + '_command_list')
 
-                    except:
-                        cmd_lst = []
-                        
-                    response = jsonify(
-                                    commands=cmd_lst
-                                    )
-            except:
-                pass
+                except:
+                    cmd_lst = []
+                
+                response = jsonify(
+                                commands=cmd_lst
+                                )
+##            except:
+##                pass
             if 'login_id' in hblink_req and 'login_confirmed' not in hblink_req:
                 if type(hblink_req['login_id']) == int:
                     if authorized_peer(hblink_req['login_id'])[0]:
@@ -7640,16 +7727,16 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
                 response = jsonify(
                                 logged=True
                                     )
-            elif 'burn_list' in hblink_req: # ['burn_list']: # == 'burn_list':
+            elif hblink_req['mode'] == 'burn_list': # ['burn_list']: # == 'burn_list':
                 response = jsonify(
                                 burn_list=get_burnlist()
                                     )
-            elif 'aprs_settings' in hblink_req: # ['burn_list']: # == 'burn_list':
+            elif hblink_req['mode'] == 'aprs_settings': # ['burn_list']: # == 'burn_list':
 ##                print(get_aprs_settings())
                 response = jsonify(
                                 aprs_settings=get_aprs_settings()
                                     )
-            elif 'loc_callsign' in hblink_req:
+            elif hblink_req['mode'] == 'loc_callsign':
                 if hblink_req['lat'] == '*' and hblink_req['lon'] == '*':
 ##                    del peer_locations[hblink_req['dmr_id']]
                     del_peer_loc(hblink_req['dmr_id'])
@@ -7660,21 +7747,21 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
                     peer_loc_add(hblink_req['loc_callsign'], hblink_req['lat'], hblink_req['lon'], hblink_req['description'], hblink_req['dmr_id'], '', '', hblink_req['url'], hblink_req['software'], hblink_req['loc'])
                     print(PeerLoc.query.all())
                 response = ''
-            elif 'dashboard' in hblink_req:
+            elif hblink_req['mode'] == 'dashboard':
                 if 'lat' in hblink_req:
                     # Assuming this is a GPS loc
                     dash_loc_add(hblink_req['call'], hblink_req['lat'], hblink_req['lon'], hblink_req['comment'], hblink_req['dmr_id'], hblink_req['dashboard'])
                     trim_dash_loc()
                     response = 'yes'
-            elif 'log_sms' in hblink_req:
+            elif hblink_req['mode'] == 'log_sms':
                     sms_log_add(hblink_req['snd_call'], hblink_req['rcv_call'], hblink_req['message'], hblink_req['snd_id'], hblink_req['rcv_id'], hblink_req['log_sms'], hblink_req['system_name'])
                     trim_sms_log()
                     response = 'rcvd'
-            elif 'bb_send' in hblink_req:
+            elif hblink_req['mode'] == 'bb_send':
                     bb_add(hblink_req['callsign'], hblink_req['bulletin'], hblink_req['dmr_id'], hblink_req['bb_send'], hblink_req['system_name'])
                     trim_bb()
                     response = 'rcvd'
-            elif 'mb_add' in hblink_req:
+            elif hblink_req['mode'] == 'mb_add':
                 if hblink_req['dst_callsign'] == 'admins':
                     admins = UserRoles.query.filter_by(role_id=2).all()
                     print(admins)
@@ -7692,20 +7779,21 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
             #         del_ss(hblink_req['dmr_id'])
             #         ss_add(hblink_req['callsign'], str(hblink_req['message']), hblink_req['dmr_id'])
             #         response = 'rcvd'
-            elif 'unit_table' in hblink_req:
+            elif hblink_req['mode'] == 'unit_table':
 ##                    del_unit_table(hblink_req['unit_table'])
                 try:
-                    delete_misc_field_1('unit_table_' + hblink_req['unit_table'])
+                    delete_misc_field_1('unit_table_' + hblink_req['server'])
                     misc_add('unit_table_' + hblink_req['unit_table'], str(hblink_req['data']), '', '', 0, 0, 0, 0, False, False)
-                    delete_misc_field_1('bridge_table_' + hblink_req['unit_table'])
-                    misc_add('bridge_table_' + hblink_req['unit_table'], str(hblink_req['bridge_data']), '', '', 0, 0, 0, 0, False, False)
+##                    delete_misc_field_1('bridge_table_' + hblink_req['unit_table'])
+##                    misc_add('bridge_table_' + hblink_req['unit_table'], str(hblink_req['bridge_data']), '', '', 0, 0, 0, 0, False, False)
+##                    misc_edit_field_1('bridge_table_' + hblink_req['unit_table'], str(hblink_req['bridge_data']), '', '', 0, 0, 0, 0, False, False)
                 except:
                     print('entry error')
-                    misc_add('unit_table_' + hblink_req['unit_table'], str(hblink_req['data']), '', '', 0, 0, 0, 0, False, False)
-                    misc_add('bridge_table_' + hblink_req['unit_table'], str(hblink_req['bridge_data']), '', '', 0, 0, 0, 0, False, False)
+                    misc_add('unit_table_' + hblink_req['server'], str(hblink_req['data']), '', '', 0, 0, 0, 0, False, False)
+##                    misc_add('bridge_table_' + hblink_req['unit_table'], str(hblink_req['bridge_data']), '', '', 0, 0, 0, 0, False, False)
 ##                    unit_table_add(hblink_req['data'])
                 response = 'rcvd'
-            elif 'known_services' in hblink_req:
+            elif hblink_req['mode'] == 'known_services':
                 print(hblink_req)
 ##                    del_unit_table(hblink_req['unit_table'])
                 try:
@@ -7718,34 +7806,34 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
                 response = 'rcvd'
 
 
-            elif 'get_config' in hblink_req:
-                if hblink_req['get_config']: 
+            elif hblink_req['mode'] == 'get_config':
+##                if hblink_req['get_config']: 
 ##                    active_tgs[hblink_req['get_config']] = {}
 
-                    pl = Misc.query.filter_by(field_1='ping_list').first()
-                    ping_list = ast.literal_eval(pl.field_2)
-        
-                    ping_list[hblink_req['get_config']] = time.time()
-                    
-                    misc_edit_field_1('ping_list', str(ping_list), '', '', 0, 0, 0, 0, True, True)
+                pl = Misc.query.filter_by(field_1='ping_list').first()
+                ping_list = ast.literal_eval(pl.field_2)
+    
+                ping_list[hblink_req['server']] = time.time()
+                
+                misc_edit_field_1('ping_list', str(ping_list), '', '', 0, 0, 0, 0, True, True)
 ##                    print(active_tgs)
-    ##                try:
+##                try:
 ##                    print(get_peer_configs(hblink_req['get_config']))
 
 ##                    print(masters_get(hblink_req['get_config']))
-                    response = jsonify(
-                            config=server_get(hblink_req['get_config']),
-                            peers=get_peer_configs(hblink_req['get_config']),
-                            masters=masters_get(hblink_req['get_config']),
-    ##                        OBP=get_OBP(hblink_req['get_config'])
+                response = jsonify(
+                        config=server_get(hblink_req['server']),
+                        peers=get_peer_configs(hblink_req['server']),
+                        masters=masters_get(hblink_req['server']),
+##                        OBP=get_OBP(hblink_req['get_config'])
 
-                            )
-    ##                except:
-    ##                    message = jsonify(message='Config error')
-    ##                    response = make_response(message, 401)
+                        )
+##                except:
+##                    message = jsonify(message='Config error')
+##                    response = make_response(message, 401)
                     
 
-            elif 'get_sms_que' in hblink_req:
+            elif hblink_req['mode'] == 'get_sms_que':
                 if hblink_req['get_sms_que']:
                     q = sms_que(hblink_req['get_sms_que'])
 
@@ -7753,7 +7841,7 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
                             que=q
                             )
                     sms_que_purge(hblink_req['get_sms_que'])
-            elif 'sms_cmd' in hblink_req:
+            elif hblink_req['mode'] == 'sms_cmd':
 ##                print(get_aprs_settings())
                 if hblink_req['sms_cmd']:
                     split_cmd = str(hblink_req['cmd']).split(' ')
@@ -7829,13 +7917,14 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
     ##                        OBP=get_OBP(hblink_req['get_config'])
 
                             )
-            elif 'get_rules' in hblink_req:
-                if hblink_req['get_rules']: # == 'burn_list':
+            elif hblink_req['mode'] == 'get_rules':
+##                if hblink_req['get_rules']: # == 'burn_list':
                     
     ##                try:
-                    response = jsonify(
-                            rules=generate_rules(hblink_req['get_rules']),
-                            )
+                response = jsonify(
+                        rules=generate_rules(hblink_req['server']),
+                        )
+                
 
         else:
             message = jsonify(message='Authentication error')

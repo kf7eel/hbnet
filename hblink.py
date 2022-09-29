@@ -150,6 +150,8 @@ def download_burnlist(_CONFIG):
     user_man_url = _CONFIG['WEB_SERVICE']['URL']
     shared_secret = str(sha256(_CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     burn_check = {
+    'server': _CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'mode': 'burn_list',
     'burn_list':True,
     'secret':shared_secret
     }
@@ -332,6 +334,8 @@ class HBSYSTEM(DatagramProtocol):
         shared_secret = str(sha256(self._CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
 ##        print(int(str(int_id(_id))[:7]))
         auth_check = {
+        'server': self._CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+        'mode': 'auth_check',
         'secret':shared_secret,
         'login_id':int(str(int_id(_id))[:7]),
         'login_ip': peer_ip,
@@ -354,6 +358,8 @@ class HBSYSTEM(DatagramProtocol):
         shared_secret = str(sha256(self._CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
         #print(int(str(int_id(_id))[:7]))
         auth_conf = {
+        'server': self._CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+        'mode': 'login_conf',
         'secret':shared_secret,
         'login_id':int(str(int_id(_id))[:7]),
         'login_ip': peer_ip,
@@ -375,6 +381,8 @@ class HBSYSTEM(DatagramProtocol):
         user_man_url = self._CONFIG['WEB_SERVICE']['URL']
         shared_secret = str(sha256(self._CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
         peer_loc_conf = {
+        'server': self._CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+        'mode': 'peer_loc',
         'secret':shared_secret,
         'loc_callsign':re.sub("b'|'|\s\s+", '', str(call)),
         'dmr_id' : int(str(int_id(_id))),

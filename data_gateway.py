@@ -319,6 +319,8 @@ def download_aprs_settings(_CONFIG):
     user_man_url = _CONFIG['WEB_SERVICE']['URL']
     shared_secret = str(sha256(_CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     aprs_check = {
+    'server': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'mode': 'aprs_settings',
     'aprs_settings':True,
     'secret':shared_secret
     }
@@ -339,6 +341,8 @@ def ping(CONFIG):
     user_man_url = CONFIG['WEB_SERVICE']['URL']
     shared_secret = str(sha256(CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     ping_data = {
+    'server': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'mode': 'ping',
     'ping': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
     'secret':shared_secret
     }
@@ -364,7 +368,8 @@ def send_dash_loc(CONFIG, call, lat, lon, time, comment, dmr_id):
     user_man_url = CONFIG['WEB_SERVICE']['URL']
     shared_secret = str(sha256(CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     loc_data = {
-    'dashboard': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'server': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'mode': 'dashboard',
     'secret':shared_secret,
     'call': call,
     'lat' : lat,
@@ -387,7 +392,8 @@ def send_sms_log(CONFIG, snd_call, rcv_call, msg, rcv_id, snd_id, system_name):
     user_man_url = CONFIG['WEB_SERVICE']['URL']
     shared_secret = str(sha256(CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     sms_data = {
-    'log_sms': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'server': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'mode': 'log_sms',
     'secret':shared_secret,
     'snd_call': snd_call,
     'rcv_call': rcv_call,
@@ -409,7 +415,8 @@ def send_bb(CONFIG, callsign, dmr_id, bulletin, system_name):
     user_man_url = CONFIG['WEB_SERVICE']['URL']
     shared_secret = str(sha256(CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     sms_data = {
-    'bb_send': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'server': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'mode': 'bb_send',
     'secret':shared_secret,
     'callsign': callsign,
     'dmr_id': dmr_id,
@@ -432,7 +439,8 @@ def send_mb(CONFIG, _dst_callsign, _src_callsign, message, _dst_dmr_id, _src_dmr
     user_man_url = CONFIG['WEB_SERVICE']['URL']
     shared_secret = str(sha256(CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     mb_data = {
-    'mb_add': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'server': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'mode': 'mb_add',
     'secret':shared_secret,
     'dst_callsign': _dst_callsign,
     'src_callsign': _src_callsign,
@@ -480,7 +488,8 @@ def send_unit_table(CONFIG, _data):
     user_man_url = CONFIG['WEB_SERVICE']['URL']
     shared_secret = str(sha256(CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     sms_data = {
-    'unit_table': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'server': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'mode': 'unit_table',
     'secret':shared_secret,
     'data': str(_data),
 
@@ -500,7 +509,8 @@ def send_known_services(CONFIG, _data):
     user_man_url = CONFIG['WEB_SERVICE']['URL']
     shared_secret = str(sha256(CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     sms_data = {
-    'known_services': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'server': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'mode': 'known_services',
     'secret':shared_secret,
     'data': str(_data),
 
@@ -520,7 +530,8 @@ def send_sms_que_req(CONFIG):
     user_man_url = CONFIG['WEB_SERVICE']['URL']
     shared_secret = str(sha256(CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     sms_req_data = {
-    'get_sms_que': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'server': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'mode': 'get_sms_que',
     'secret':shared_secret,
     }
     json_object = json.dumps(sms_req_data, indent = 4)
@@ -538,7 +549,8 @@ def send_sms_cmd(CONFIG, _rf_id, _cmd):
     user_man_url = CONFIG['WEB_SERVICE']['URL']
     shared_secret = str(sha256(CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     sms_cmd_data = {
-    'sms_cmd': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'server': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'mode': 'sms_cmd',
     'secret':shared_secret,
     'rf_id': _rf_id,
     'cmd': _cmd,
@@ -563,7 +575,8 @@ def download_config(CONFIG_FILE, cli_file):
     user_man_url = CONFIG_FILE['WEB_SERVICE']['URL']
     shared_secret = str(sha256(CONFIG_FILE['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     config_check = {
-    'get_config':CONFIG_FILE['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'server': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'mode': 'get_config',
     'secret':shared_secret
     }
     json_object = json.dumps(config_check, indent = 4)

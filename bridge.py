@@ -118,15 +118,14 @@ __email__      = 'kf7eel@qsl.net'
 ####        return config.build_config(cli_file)
 
 
-def send_unit_table(CONFIG, _data, _bridge_data):
+def send_unit_table(CONFIG, _data):
     user_man_url = CONFIG['WEB_SERVICE']['URL']
     shared_secret = str(sha256(CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     sms_data = {
-    'unit_table': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'server': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'mode':'unit_table',
     'secret':shared_secret,
     'data': str(_data),
-    'bridge_data': str(_bridge_data),
-
     }
     json_object = json.dumps(sms_data, indent = 4)
     
@@ -138,13 +137,15 @@ def send_unit_table(CONFIG, _data, _bridge_data):
     except requests.ConnectionError:
         logger.error('Config server unreachable')
 
-def ping(CONFIG):
+def ping(CONFIG, _bridge_data):
     user_man_url = CONFIG['WEB_SERVICE']['URL']
     shared_secret = str(sha256(CONFIG['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     ping_data = {
-    'ping': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
-    'secret':shared_secret
-
+    'server': CONFIG['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'mode': 'ping',
+    'secret':shared_secret,
+    'bridge_data': str(_bridge_data),
+    'user_systems': str(user_systems())
     }
 ##    print(rules_check)
     json_object = json.dumps(ping_data, indent = 4)
@@ -158,6 +159,33 @@ def ping(CONFIG):
                 print('restart')
                 print(sys.argv)
                 os.execv(__file__, sys.argv)
+            elif 'on:' in c or 'off:' in c:
+                
+                parse = re.sub('on:|off:','', c)
+                data_list = parse.split(',')
+                iBRIDGES = copy.deepcopy(BRIDGES)
+##                print(parse)
+##                print(BRIDGES[data_list[0]])
+##                print(BRIDGES[data_list[0]])
+##                print(type(BRIDGES[data_list[0]]))
+##                print(BRIDGES[data_list[0]][1])
+                n = 0
+                for r in iBRIDGES[data_list[0]]:
+##                    print(r['SYSTEM'])
+                    if r['SYSTEM'] == data_list[1]:
+##                        print(n)
+##                        print(r['SYSTEM'])
+##                        print(BRIDGES[data_list[0]][n]['SYSTEM'])
+##                        print(BRIDGES[data_list[0]][n]['ACTIVE'])
+                        if 'on:' in c:
+                            BRIDGES[data_list[0]][n]['ACTIVE'] = True
+                            BRIDGES[data_list[0]][n]['TIMER'] = time() + iBRIDGES[data_list[0]][n]['TIMEOUT']
+                        if 'off:' in c:
+                            BRIDGES[data_list[0]][n]['ACTIVE'] = False
+                        print(BRIDGES[data_list[0]][n]['ACTIVE'])
+                    n = n + 1
+            else:
+                print(c)
            
     ##        return resp['rules']
     except requests.ConnectionError:
@@ -170,7 +198,8 @@ def download_rules(L_CONFIG_FILE, cli_file):
     user_man_url = L_CONFIG_FILE['WEB_SERVICE']['URL']
     shared_secret = str(sha256(L_CONFIG_FILE['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     rules_check = {
-    'get_rules':L_CONFIG_FILE['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'server': L_CONFIG_FILE['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'mode': 'get_rules',
     'secret':shared_secret
     }
 ##    print(rules_check)
@@ -191,7 +220,8 @@ def download_config(L_CONFIG_FILE, cli_file):
     user_man_url = L_CONFIG_FILE['WEB_SERVICE']['URL']
     shared_secret = str(sha256(L_CONFIG_FILE['WEB_SERVICE']['SHARED_SECRET'].encode()).hexdigest())
     config_check = {
-    'get_config':L_CONFIG_FILE['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'server': L_CONFIG_FILE['WEB_SERVICE']['THIS_SERVER_NAME'],
+    'mode': 'get_config',
     'secret':shared_secret
     }
     json_object = json.dumps(config_check, indent = 4)
@@ -540,6 +570,23 @@ def ten_loop_func():
         with open(CONFIG['WEB_SERVICE']['BURN_FILE'], 'w') as f:
             f.write(str(download_burnlist(CONFIG)))
 
+def user_systems():
+    peer_files = os.listdir('/tmp/' + CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/')
+    whos_where = {}
+    for i in peer_files:
+        if '.' not in i:
+            print(i)
+            data = ast.literal_eval(os.popen('cat /tmp/' + (CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/' + i)).read())
+##            where_list = {}
+            whos_where[i] = []
+            for d in data.items():
+                print(d[1]['call'])
+                whos_where[i].append(d[1]['call'])
+##                whos_where.append({i:d[1]['call']})
+##    print(whos_where)
+    return whos_where
+##    ast.literal_eval(os.popen('cat /tmp/' + (CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/' + system)).read())
+
                 
 # Run this every minute for rule timer updates
 def rule_timer_loop(unit_flood_time):
@@ -593,7 +640,7 @@ def rule_timer_loop(unit_flood_time):
 
     for unit in remove_list:
         del UNIT_MAP[unit]
-    send_unit_table(CONFIG, UNIT_MAP, BRIDGES)
+    send_unit_table(CONFIG, UNIT_MAP)
 
     logger.debug('Removed unit(s) %s from UNIT_MAP', remove_list)
 
@@ -615,7 +662,7 @@ def rule_timer_loop(unit_flood_time):
 
 # run this every 10 seconds to trim orphaned stream ids
 def stream_trimmer_loop():
-    ping(CONFIG)
+    ping(CONFIG, BRIDGES)
     logger.debug('(ROUTER) Trimming inactive stream IDs from system lists')
     _now = time()
 
