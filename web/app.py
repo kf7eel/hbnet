@@ -1313,21 +1313,24 @@ By using this service, you agree not to do anything malicious. You agree to use 
             if i.ip == '':
                 pass
             else:
-                connected = Misc.query.filter_by(field_1='user_system_table_' + i.name).first()
-                connected_list = ast.literal_eval(connected.field_2)
+                try:
+                    connected = Misc.query.filter_by(field_1='user_system_table_' + i.name).first()
+                    connected_list = ast.literal_eval(connected.field_2)                    
 ##                print(connected_list)
-                clients = '''<div class="dropdown">
-  <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown">
-    Self Care
-  </button>
-  <ul class="dropdown-menu">
-'''
-                for s in connected_list.items():
-                    for t in s[1]:
-                        if str(current_user.username).upper() == t.upper():
-                            clients = clients + '''<li><a class="dropdown-item" href="/bridge_status/''' + i.name + '''/''' + s[0] + '''"">''' + s[0] + '''</a></li>\n'''
-                clients = clients + '''</ul>
-</div>'''
+                    clients = '''<div class="dropdown">
+      <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown">
+        Self Care
+      </button>
+      <ul class="dropdown-menu">
+    '''
+                    for s in connected_list.items():
+                        for t in s[1]:
+                            if str(current_user.username).upper() == t.upper():
+                                clients = clients + '''<li><a class="dropdown-item" href="/bridge_status/''' + i.name + '''/''' + s[0] + '''"">''' + s[0] + '''</a></li>\n'''
+                    clients = clients + '''</ul>
+    </div>'''
+                except:
+                    clients = ''
 
                 tool_menu = '''
  <div class="dropdown">
