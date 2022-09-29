@@ -1316,21 +1316,18 @@ By using this service, you agree not to do anything malicious. You agree to use 
                 connected = Misc.query.filter_by(field_1='user_system_table_' + i.name).first()
                 connected_list = ast.literal_eval(connected.field_2)
 ##                print(connected_list)
-                clients = '<strong>Self-care: </strong>'
+                clients = '''<div class="dropdown">
+  <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown">
+    Self Care
+  </button>
+  <ul class="dropdown-menu">
+'''
                 for s in connected_list.items():
                     for t in s[1]:
                         if str(current_user.username).upper() == t.upper():
-                            clients = clients + '''<a href="/bridge_status/''' + i.name + '''/''' + s[0] + '''"><button type="button" class="btn btn-secondary">''' + s[0] + '''</button></a>\n'''
-##                client_menu = '''
-##<div class="dropdown">
-##  <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
-##    Tools
-##  </button>
-##  <ul class="dropdown-menu">
-##  ''' + clients + '''
-##  </ul>
-##</div> 
-##'''
+                            clients = clients + '''<li><a class="dropdown-item" href="/bridge_status/''' + i.name + '''/''' + s[0] + '''"">''' + s[0] + '''</a></li>\n'''
+                clients = clients + '''</ul>
+</div>'''
 
                 tool_menu = '''
  <div class="dropdown">
@@ -1351,9 +1348,12 @@ By using this service, you agree not to do anything malicious. You agree to use 
   ''' + svr_status + '''
     <div style="max-width:200px; word-wrap:break-word; text-align: center;">''' + i.public_notes + '''</div>
     <p>&nbsp;</p>
-''' + clients + '''
-    <p>&nbsp;</p>
-''' + tool_menu + '''
+     <div class="row">
+     <div class="col">
+''' + clients + '''</div>
+    <div class="col">
+''' + tool_menu + '''</div>
+</div>
   </div>
 </div>
 
