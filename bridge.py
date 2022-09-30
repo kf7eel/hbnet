@@ -571,16 +571,20 @@ def ten_loop_func():
             f.write(str(download_burnlist(CONFIG)))
 
 def user_systems():
+    if Path('/tmp/' + (CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/')).exists():
+        pass
+    else:
+        Path('/tmp/' + (CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/')).mkdir()
     peer_files = os.listdir('/tmp/' + CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/')
     whos_where = {}
     for i in peer_files:
         if '.' not in i:
-            print(i)
+            # print(i)
             data = ast.literal_eval(os.popen('cat /tmp/' + (CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/' + i)).read())
 ##            where_list = {}
             whos_where[i] = []
             for d in data.items():
-                print(d[1]['call'])
+                # print(d[1]['call'])
                 whos_where[i].append(d[1]['call'])
 ##                whos_where.append({i:d[1]['call']})
 ##    print(whos_where)

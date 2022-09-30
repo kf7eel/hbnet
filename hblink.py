@@ -94,7 +94,7 @@ def decrypt_packet(key, message):
 
     return token
 
-def write_peer_file(master, peer_dict, CONFIG):
+def write_peer_file(master, peer_dict, CONFIG, aprs = True):
     # Pull stuff for aprs out
     if Path('/tmp/' + CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/' + master).is_file():
         pass
@@ -102,7 +102,7 @@ def write_peer_file(master, peer_dict, CONFIG):
         Path('/tmp/' + CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/' + master).touch()
     new_peers = {}
     for d in peer_dict.items():
-        new_peers[int_id(d[0])] = {'call': str(d[1]['CALLSIGN'].decode('utf-8')).strip(' '), 'lat':str(d[1]['LATITUDE'].decode('utf-8')), 'lon':str(d[1]['LONGITUDE'].decode('utf-8')), 'description':str(d[1]['DESCRIPTION'].decode('utf-8'))}
+        new_peers[int_id(d[0])] = {'call': str(d[1]['CALLSIGN'].decode('utf-8')).strip(' '), 'lat':str(d[1]['LATITUDE'].decode('utf-8')), 'lon':str(d[1]['LONGITUDE'].decode('utf-8')), 'description':str(d[1]['DESCRIPTION'].decode('utf-8')), 'aprs': aprs}
     with open('/tmp/' + CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/' + master, 'w') as peer_file:
         peer_file.write(str(new_peers))
         peer_file.close()
@@ -459,7 +459,9 @@ class HBSYSTEM(DatagramProtocol):
 
     # Aliased in __init__ to maintenance_loop if system is a master
     def master_maintenance_loop(self):
-        print(self._peers)
+        # print()
+        # print(self._peers)
+        # print()
         logger.debug('(%s) Master maintenance loop started', self._system)
         remove_list = []
         for peer in self._peers:
@@ -469,10 +471,17 @@ class HBSYSTEM(DatagramProtocol):
                 remove_list.append(peer)
         for peer in remove_list:
             logger.info('(%s) Peer %s (%s) has timed out and is being removed', self._system, self._peers[peer]['CALLSIGN'], self._peers[peer]['RADIO_ID'])
+            # print('/tmp/' + CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/' + self._system)
+            # print('---')
             self.send_peer_loc(self._peers[peer]['RADIO_ID'], self._peers[peer]['CALLSIGN'], '*', '*', '*', '*', '*', '*')
             logger.info('Sent map erase command')
             # Remove any timed out peers from the configuration
             del self._CONFIG['SYSTEMS'][self._system]['PEERS'][peer]
+            # Update PEER files
+            # print('/tmp/' + CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/' + self._system)
+            # os.remove('/tmp/' + CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/' + self._system)
+        # write_peer_file(self._system, self._peers, self._CONFIG)
+
 
     # Aliased in __init__ to maintenance_loop if system is a peer
     def peer_maintenance_loop(self):
@@ -749,9 +758,11 @@ class HBSYSTEM(DatagramProtocol):
                     logger.info('(%s) Peer is closing down: %s (%s)', self._system, self._peers[_peer_id]['CALLSIGN'], int_id(_peer_id))
                     self.transport.write(b''.join([MSTNAK, _peer_id]), _sockaddr)
                     self.send_peer_loc(_peer_id, self._peers[_peer_id]['CALLSIGN'], '*', '*', '*', '*', '*', '*')
+                    print('/tmp/' + self._CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/' + self._system)
+                    os.remove('/tmp/' + self._CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/' + self._system)
                     del self._peers[_peer_id]
                     #open, remove, and write change
-                    write_peer_file(self._system, self._peers, self._CONFIG)
+                    # write_peer_file(self._system, self._peers, self._CONFIG)
 
             else:
                 _peer_id = _data[4:8]      # Configure Command
@@ -779,14 +790,15 @@ class HBSYSTEM(DatagramProtocol):
 
                     self.send_peer(_peer_id, b''.join([RPTACK, _peer_id]))
                     logger.info('(%s) Peer %s (%s) has sent repeater configuration', self._system, _this_peer['CALLSIGN'], _this_peer['RADIO_ID'])
-                    
+                    write_peer_file(self._system, self._peers, self._CONFIG)
                     if 'NO_MAP' in str(_this_peer['LOCATION']):
                         self.send_peer_loc(_peer_id, self._peers[_peer_id]['CALLSIGN'], '*', '*', '*', '*', '*', '*')
+                        write_peer_file(self._system, self._peers, self._CONFIG, aprs = False)
 ##                        print(_this_peer['LOCATION'])
 ##                        pass
                     else:
                         # Function to open and write dict here
-                        write_peer_file(self._system, self._peers, self._CONFIG)
+                        # write_peer_file(self._system, self._peers, self._CONFIG)
                         self.send_peer_loc(_peer_id, _this_peer['CALLSIGN'], _this_peer['LATITUDE'], _this_peer['LONGITUDE'], _this_peer['URL'], _this_peer['DESCRIPTION'], _this_peer['LOCATION'], str(_this_peer['PACKAGE_ID']) + ' - ' + str(_this_peer['SOFTWARE_ID']))
                 else:
                     self.transport.write(b''.join([MSTNAK, _peer_id]), _sockaddr)
@@ -815,8 +827,9 @@ class HBSYSTEM(DatagramProtocol):
 ##                self.mmdvm_cmd(_data)
                 if 'NO_MAP' in str(_data[8:]):
                     self.send_peer_loc(_peer_id, self._peers[_peer_id]['CALLSIGN'], '*', '*', '*', '*', '*', '*')
-                elif 'NO_MAP' not in str(_data[8:]):
-                    write_peer_file(self._system, self._peers, self._CONFIG)
+                    write_peer_file(self._system, self._peers, self._CONFIG, aprs = False)
+                # elif 'NO_MAP' not in str(_data[8:]):
+                    # write_peer_file(self._system, self._peers, self._CONFIG)
                 self.transport.write(b''.join([RPTACK, _peer_id]), _sockaddr)
 
         elif _command == DMRA:
