@@ -1,5 +1,5 @@
 # HBNet Data Gateway Dockerfile 
-FROM debian:11
+FROM debian:11.5
 MAINTAINER Eric Craw "kf7eel@qsl.net"
 WORKDIR /opt/hbnet
 
