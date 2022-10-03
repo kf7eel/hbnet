@@ -62,33 +62,62 @@ __email__      = 'n0mjs@me.com'
 __status__     = 'pre-alpha'
 
 
+COMMAND = {
+    'record_unit' : 35,
+    'play_unit': 33,
+    'delete_unit':39
+
+}
+
+def command_check(dmr_id):
+    dmr_id = int_id(dmr_id)
+    mode = False
+    for i in COMMAND.items():
+        if dmr_id == i[1]:
+            mode = True
+            return mode
+    return mode
+
+
+def delete_file(dmr_id):
+    os.remove('playback/' + str(dmr_id) + '.data')
+    # print('remove file')
+    logger.info('File removed')
+
 def write_file(lst, dmr_id):
     # with open('playback_test/' + str(random.randint(1,99)) + '.seq', 'w') as peer_file:
-    # try:
-    #     data = ast.literal_eval(os.popen('playback_test/' + str(dmr_id) + '.dict').read())
-    # except:
-    #     data = []
+    try:
+        data = ast.literal_eval(os.popen('cat playback/' + str(dmr_id) + '.data').read())
+    except:
+        data = []
     #     pass
     # new_lst = data + lst
-    new_lst = lst
-    with open('playback_test/' + str(dmr_id) + '.data', 'w') as peer_file:
-        peer_file.write(str(new_lst))
+    data.append(lst)
+    if not Path('playback/' + str(dmr_id) + '.data').is_file():
+        Path('playback/' + str(dmr_id) + '.data').touch()
+
+    with open('playback/' + str(dmr_id) + '.data', 'w') as peer_file:
+        peer_file.write(str(data))
         peer_file.close()
 
 def play(dmr_id):
     # data = os.popen('cat playback_test/' + str(seq_file) + '.seq').read()
-    data = ast.literal_eval(os.popen('cat playback_test/' + str(dmr_id) + '.data').read())
-    print(data)
+    try:
+        data = ast.literal_eval(os.popen('cat playback/' + str(dmr_id) + '.data').read())
+    except:
+        data = []
+        logger.error('No messages or other error.')
     # print(data)
-    with open('playback_test/' + str(dmr_id) + '.data', 'w') as peer_file:
-        peer_file.write(str([]))
-        peer_file.close()
+    # print(data)
+    # with open('playback_test/' + str(dmr_id) + '.data', 'w') as peer_file:
+    #     peer_file.write(str([]))
+    #     peer_file.close()
     return data
 
 
-DST_DICT = {}
+# DST_DICT = {}
 REC_DICT = {}
-PLAY_DICT = {}
+# PLAY_DICT = {}
 
 # Module gobal varaibles
 
@@ -153,90 +182,158 @@ class playback(HBSYSTEM):
         dmrpkt = _data[20:53]
         _bits = _data[15]
 
-        print(self.STATUS)
+        # REC_DICT[int_id(_rf_src)] = False
+
+        # print(self.STATUS)
 
         try:
             REC_DICT[int_id(_rf_src)]
+            # print(REC_DICT[int_id(_rf_src)])
         except:
             REC_DICT[int_id(_rf_src)] = False
 
+        # print(_call_type)
+        # print(not command_check(_dst_id))
+
         if _call_type == 'unit':
-            print('unit')
+            # print(self.STATUS[_slot]['RX_STREAM_ID'])
 
-            if int_id(_dst_id) == 91:
-                REC_DICT[int_id(_rf_src)] = True
+            # To prevent the recording stuff from ignoring packets due to same stream ID,
+            # Only keep track of stream start when matching _dst_id is correct
+            # print(int_id(_dst_id))
+            if command_check(_dst_id):
+                # print('matches')
+                logger.info('UNIT call, first packet, checking commands...')
 
-            elif int_id(_dst_id) == 90:
-                _play_seq = play(int_id(_rf_src))
-                for i in _play_seq:
-                    self.send_system(i)
-                    sleep(0.06)
-                _play_seq = []
+                # Start of stream
+                if (_stream_id != self.STATUS[_slot]['RX_STREAM_ID']):
+                    self.STATUS['RX_START'] = pkt_time
+                    # logger.info('(%s) *START RECORDING UNIT CALL* STREAM ID: %s SUB: %s (%s) REPEATER: %s (%s) TGID %s (%s), TS %s', \
+                    #                   self._system, int_id(_stream_id), get_alias(_rf_src, subscriber_ids), int_id(_rf_src), get_alias(_peer_id, peer_ids), int_id(_peer_id), get_alias(_dst_id, talkgroup_ids), int_id(_dst_id), _slot)
+                    # self.CALL_DATA.append(_data)
+                    self.STATUS[_slot]['RX_STREAM_ID'] = _stream_id
+
+            #         print('PKT start')
+
+            #         print(int_id(_dst_id))
+
+                    # UNIT call ID options here
+                    if int_id(_dst_id) == COMMAND['record_unit']:
+                        REC_DICT[int_id(_rf_src)] = True
+                        logger.info('Next transmission from ' + str(int_id(_rf_src)) + ' will be saved.')
+
+                    elif int_id(_dst_id) == COMMAND['play_unit']:
+                        # _play_seq = play(int_id(_rf_src))
+                        # print('play')
+                        logger.info('Playback started for ' + str(int_id(_rf_src)))
+                        # print(_play_seq)
+                        n = 0
+                        for i in play(int_id(_rf_src)):
+                            # print(i)
+                            n = n + 1
+                            logger.info('Playing message ' + str(n))
+                            for r in i:
+                                self.send_system(r)
+                                sleep(0.06)
+                            sleep(2)
+                        logger.info('Finished')
+                    elif int_id(_dst_id) == COMMAND['delete_unit']:
+                        delete_file(int_id(_rf_src))
+                        logger.info('Deleting all messages for ' + str(int_id(_rf_src)))
 
 
 
 
 
-            # # # Is this is a new call stream?
-            # if (_stream_id != self.STATUS[_slot]['RX_STREAM_ID']):
-            #     self.STATUS['RX_START'] = pkt_time
-            #     self.STATUS[_slot]['RX_STREAM_ID'] = _stream_id
-            #     return
 
-            if (_stream_id not in self.STATUS):
-                # This is a new call stream
-                self.STATUS[_stream_id] = {
-                    'START':     pkt_time,
-                    'CONTENTION':False,
-                    'RFS':       _rf_src,
-                    'TYPE':      'UNIT',
-                    'DST':       _dst_id,
-                    'ACTIVE':    True
-                }
 
-            # # if (_frame_type == const.HBPF_DATA_SYNC) and (_dtype_vseq == const.HBPF_SLT_VTERM) and (self.STATUS[_slot]['RX_TYPE'] != const.HBPF_SLT_VTERM) and (self.CALL_DATA):
-            # #     call_duration = pkt_time - self.STATUS['RX_START']
-            # #     print(call_duration)
-            #         # Final actions - Is this a voice terminator?
-            if (_frame_type == const.HBPF_DATA_SYNC) and (_dtype_vseq == const.HBPF_SLT_VTERM) and (self.STATUS[_slot]['RX_TYPE'] != const.HBPF_SLT_VTERM):
-                self._targets = []
-                call_duration = pkt_time - self.STATUS[_slot]['RX_START']
-                print(call_duration)
+        #     # Final actions - Is this a voice terminator?
+        #     # if (_frame_type == const.HBPF_DATA_SYNC) and (_dtype_vseq == const.HBPF_SLT_VTERM) and (self.STATUS[_slot]['RX_TYPE'] != const.HBPF_SLT_VTERM) and (self.CALL_DATA):
+        #     #     call_duration = pkt_time - self.STATUS['RX_START']
+        #     #     # self.CALL_DATA.append(_data)
+        #     #     # logger.info('(%s) *END   RECORDING UNIT CALL* STREAM ID: %s', self._system, int_id(_stream_id))
+        #     #     print('PKT END')
+
+        #     # print('unit')
+
+        #     # if int_id(_dst_id) == 91:
+        #     #     REC_DICT[int_id(_rf_src)] = True
+
+        #     # elif int_id(_dst_id) == 90:
+        #     #     _play_seq = play(int_id(_rf_src))
+        #     #     for i in _play_seq:
+        #     #         self.send_system(i)
+        #     #         sleep(0.06)
+        #     #     _play_seq = []
+
+
+
+
+
+        #     # # # Is this is a new call stream?
+        #     # if (_stream_id != self.STATUS[_slot]['RX_STREAM_ID']):
+        #     #     self.STATUS['RX_START'] = pkt_time
+        #     #     self.STATUS[_slot]['RX_STREAM_ID'] = _stream_id
+        #     #     return
+
+        #     # if (_stream_id not in self.STATUS):
+        #     #     # This is a new call stream
+        #     #     self.STATUS[_stream_id] = {
+        #     #         'START':     pkt_time,
+        #     #         'CONTENTION':False,
+        #     #         'RFS':       _rf_src,
+        #     #         'TYPE':      'UNIT',
+        #     #         'DST':       _dst_id,
+        #     #         'ACTIVE':    True
+        #     #     }
+
+        #     # # if (_frame_type == const.HBPF_DATA_SYNC) and (_dtype_vseq == const.HBPF_SLT_VTERM) and (self.STATUS[_slot]['RX_TYPE'] != const.HBPF_SLT_VTERM) and (self.CALL_DATA):
+        #     # #     call_duration = pkt_time - self.STATUS['RX_START']
+        #     # #     print(call_duration)
+        #     #         # Final actions - Is this a voice terminator?
+        #     # if (_frame_type == const.HBPF_DATA_SYNC) and (_dtype_vseq == const.HBPF_SLT_VTERM) and (self.STATUS[_slot]['RX_TYPE'] != const.HBPF_SLT_VTERM):
+        #     #     self._targets = []
+        #     #     call_duration = pkt_time - self.STATUS[_slot]['RX_START']
+        #     #     print(call_duration)
             
 
-            # print(int_id(_dst_id))
-            # print(ahex(_dst_id))
-            # print(ahex(_stream_id))
-            # try:
-            #     print(pkt_time - DST_DICT[int_id(_dst_id)][0] < 5)
-            #     print(DST_DICT[int_id(_dst_id)][1] != (_stream_id))
-            #     print(DST_DICT[int_id(_dst_id)][1])
-            #     # print(pkt_time)
-            #     # print(DST_DICT[int_id(_dst_id)])
-            #     if pkt_time - DST_DICT[int_id(_dst_id)][0] < 5 and DST_DICT[int_id(_dst_id)][1] != (_stream_id):
-            #         print('true -------------------')
-            #     else:
-            #         del DST_DICT[int_id(_dst_id)]
-            # except:
-            #     DST_DICT[int_id(_dst_id)] = [pkt_time, (_stream_id)]
-            # if len(str(int_id(_dst_id))) > 7:
-            #     _mode = int(str(int_id(_dst_id))[7:])
-            #     _dst = int(str(int_id(_dst_id))[:7])
-            #     print(_dst)
-            #     # print(_mode)
-            #     if _mode == 1:
-            #         REC_DICT[int_id(_rf_src)] = _dst
-            #         # print('rec')
-            #         # _play_seq = play(50)
-            #         # for i in _play_seq:
-            #         #     self.send_system(i)
-            #         #     sleep(0.06)
-            #         # os.remove('playback_test/50.seq')
+        #     # print(int_id(_dst_id))
+        #     # print(ahex(_dst_id))
+        #     # print(ahex(_stream_id))
+        #     # try:
+        #     #     print(pkt_time - DST_DICT[int_id(_dst_id)][0] < 5)
+        #     #     print(DST_DICT[int_id(_dst_id)][1] != (_stream_id))
+        #     #     print(DST_DICT[int_id(_dst_id)][1])
+        #     #     # print(pkt_time)
+        #     #     # print(DST_DICT[int_id(_dst_id)])
+        #     #     if pkt_time - DST_DICT[int_id(_dst_id)][0] < 5 and DST_DICT[int_id(_dst_id)][1] != (_stream_id):
+        #     #         print('true -------------------')
+        #     #     else:
+        #     #         del DST_DICT[int_id(_dst_id)]
+        #     # except:
+        #     #     DST_DICT[int_id(_dst_id)] = [pkt_time, (_stream_id)]
+        #     # if len(str(int_id(_dst_id))) > 7:
+        #     #     _mode = int(str(int_id(_dst_id))[7:])
+        #     #     _dst = int(str(int_id(_dst_id))[:7])
+        #     #     print(_dst)
+        #     #     # print(_mode)
+        #     #     if _mode == 1:
+        #     #         REC_DICT[int_id(_rf_src)] = _dst
+        #     #         # print('rec')
+        #     #         # _play_seq = play(50)
+        #     #         # for i in _play_seq:
+        #     #         #     self.send_system(i)
+        #     #         #     sleep(0.06)
+        #     #         # os.remove('playback_test/50.seq')
 
-        # elif int_id(_dst_id) == 9:
-        #     print(int_id(_dst_id))
+        # # elif int_id(_dst_id) == 9:
+        # #     print(int_id(_dst_id))
 
-        if _call_type == 'group' or _call_type == 'unit' and REC_DICT[int_id(_rf_src)] == True and int_id(_dst_id) != 91:
+        if _call_type == 'group' or _call_type == 'unit' and REC_DICT[int_id(_rf_src)] == True: # and int_id(_dst_id) != COMMAND['record_unit']:
+        # if _call_type == 'group' or _call_type == 'unit' and REC_DICT[int_id(_rf_src)] == True and not command_check(_dst_id):
+
+        # if _call_type == 'group' or _call_type == 'unit': # and REC_DICT[int_id(_rf_src)] == True and int_id(_dst_id) != 91:
+            # print(self.STATUS[_slot]['RX_STREAM_ID'])
             # _dst_id = bytes_3(int(str(int_id(_dst_id))[:7]))
             # print(ahex(_data))
             
@@ -247,6 +344,7 @@ class playback(HBSYSTEM):
                                   self._system, int_id(_stream_id), get_alias(_rf_src, subscriber_ids), int_id(_rf_src), get_alias(_peer_id, peer_ids), int_id(_peer_id), get_alias(_dst_id, talkgroup_ids), int_id(_dst_id), _slot)
                 self.CALL_DATA.append(_data)
                 self.STATUS[_slot]['RX_STREAM_ID'] = _stream_id
+                print(ahex(_stream_id))
                 return
 
             # Final actions - Is this a voice terminator?
@@ -261,7 +359,9 @@ class playback(HBSYSTEM):
                     self.send_system(i)
                     #print(i)
                     sleep(0.06)
+                # print(REC_DICT[int_id(_rf_src)])
                 if REC_DICT[int_id(_rf_src)] == True:
+                    logger.info('RF Source matches record command, saving for ' + str(int_id(_dst_id)) + ', ' + _call_type)
                     write_file(self.CALL_DATA, int_id(_dst_id))
 
                     REC_DICT[int_id(_rf_src)] = False
@@ -326,6 +426,7 @@ if __name__ == '__main__':
     if cli_args.LOG_LEVEL:
         CONFIG['LOGGER']['LOG_LEVEL'] = cli_args.LOG_LEVEL
     logger = log.config_logging(CONFIG['LOGGER'])
+    logger.info('\n\nVoicemail/Annaouncment/Echo Server additions, Copyright (c) 2022\n\tKF7EEL - Eric, kf7eel@qsl.net -  All rights reserved.\n')
     logger.info('\n\nCopyright (c) 2013, 2014, 2015, 2016, 2018, 2019\n\tThe Founding Members of the K0USY Group. All rights reserved.\n')
     logger.debug('Logging system started, anything from here on gets logged')
     
@@ -357,11 +458,16 @@ if __name__ == '__main__':
     report_server = config_reports(CONFIG, reportFactory)
 
     # Create folder so hbnet.py can access list PEER connections
-    print(CONFIG['LOGGER']['LOG_NAME'])
+    # print(CONFIG['LOGGER']['LOG_NAME'])
     if Path('/tmp/' + (CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/')).exists():
         pass
     else:
         Path('/tmp/' + (CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/')).mkdir()
+    
+    if Path('playback/').exists():
+        pass
+    else:
+        Path('playback/').mkdir()
     
     
     # HBlink instance creation
@@ -375,6 +481,4 @@ if __name__ == '__main__':
                 systems[system] = playback(system, CONFIG, report_server)
             reactor.listenUDP(CONFIG['SYSTEMS'][system]['PORT'], systems[system], interface=CONFIG['SYSTEMS'][system]['IP'])
             logger.debug('%s instance created: %s, %s', CONFIG['SYSTEMS'][system]['MODE'], system, systems[system])
-
-    print(const.HBPF_DATA_SYNC)
     reactor.run()
