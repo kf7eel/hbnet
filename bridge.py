@@ -1831,8 +1831,11 @@ if __name__ == '__main__':
     # Create folder so hbnet.py can access list PEER connections
     print(CONFIG['LOGGER']['LOG_NAME'])
     if Path('/tmp/' + (CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/')).exists():
-        os.remove('/tmp/' + (CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/*'))
-        pass
+        try:
+            os.remove('/tmp/' + (CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/*'))
+        except Exception as e:
+            logger.error(e)
+            pass
     else:
         Path('/tmp/' + (CONFIG['LOGGER']['LOG_NAME'] + '_PEERS/')).mkdir()
 
