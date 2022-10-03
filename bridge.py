@@ -496,6 +496,15 @@ def mirror_traffic(_data):
 ##                    print(CONFIG['SYSTEMS'][system]['OTHER_OPTIONS'])
                     if 'MIRROR_DATA' in CONFIG['SYSTEMS'][system]['OTHER_OPTIONS']:
                         systems[system].send_system(SVRD + b'MDAT' + _data)
+
+def all_unit_mmdvm_peer(_data):
+    for system in CONFIG['SYSTEMS']:
+        if CONFIG['SYSTEMS'][system]['ENABLED']:
+                if CONFIG['SYSTEMS'][system]['MODE'] == 'PEER':
+                    if CONFIG['SYSTEMS'][system]['MODE']
+                    if 'ALL_MMDVM_UNIT' in CONFIG['SYSTEMS'][system]['OPTIONS']:
+                        systems[system].send_system(_data)
+
                     
 
 
@@ -1598,6 +1607,7 @@ class routerHBP(HBSYSTEM):
             else:
                 self.unit_received(_peer_id, _rf_src, _dst_id, _seq, _slot, _frame_type, _dtype_vseq, _stream_id, _data)
                 mirror_traffic(_data)
+                all_unit_mmdvm_peer(_data)
         elif _call_type == 'vcsbk':
             self.group_received(_peer_id, _rf_src, _dst_id, _seq, _slot, _frame_type, _dtype_vseq, _stream_id, _data)
             logger.debug('CSBK recieved, forwarded to destination TG.')
