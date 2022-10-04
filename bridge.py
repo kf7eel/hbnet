@@ -497,12 +497,12 @@ def mirror_traffic(_data):
                     if 'MIRROR_DATA' in CONFIG['SYSTEMS'][system]['OTHER_OPTIONS']:
                         systems[system].send_system(SVRD + b'MDAT' + _data)
 
-def all_unit_mmdvm_peer(_data):
-    for system in CONFIG['SYSTEMS']:
-        if CONFIG['SYSTEMS'][system]['ENABLED']:
-                if CONFIG['SYSTEMS'][system]['MODE'] == 'PEER':
-                    if b'ALL_MMDVM_UNIT' in CONFIG['SYSTEMS'][system]['OPTIONS']:
-                        systems[system].send_system(_data)
+# def all_unit_mmdvm_peer(_data):
+#     for system in CONFIG['SYSTEMS']:
+#         if CONFIG['SYSTEMS'][system]['ENABLED']:
+#                 if CONFIG['SYSTEMS'][system]['MODE'] == 'PEER':
+#                     if b'ALL_MMDVM_UNIT' in CONFIG['SYSTEMS'][system]['OPTIONS']:
+#                         systems[system].send_system(_data)
 
 def expose_all(_data):
     for system in CONFIG['SYSTEMS']:
