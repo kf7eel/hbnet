@@ -56,7 +56,7 @@ from cryptography.fernet import Fernet
 from flaskext.markdown import Markdown
 
 peer_locations = {}
-hbnet_version = 'V 09282022'
+hbnet_version = 'V 10032022'
 
 # Query radioid.net for list of IDs
 def get_ids(callsign):
@@ -7463,7 +7463,7 @@ Name: <strong>''' + p.name + '''</strong>&nbsp; -&nbsp; Port: <strong>''' + str(
                     usr_nm = ''
             except:
                 usr_lnk = ''
-            print(usr_link)
+            # print(usr_link)
             content = content + '''
 <tr>
   <td><p><a href="https://www.radioid.net/database/view?id=''' + str(int_id(i[0])) + '''" target="_blank" rel="noopener"><button type="button" class="btn btn-warning">''' + str(int_id(i[0])) + '''</button></a><br /><br />''' + usr_lnk + '''</td>

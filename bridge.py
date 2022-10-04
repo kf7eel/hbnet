@@ -501,8 +501,19 @@ def all_unit_mmdvm_peer(_data):
     for system in CONFIG['SYSTEMS']:
         if CONFIG['SYSTEMS'][system]['ENABLED']:
                 if CONFIG['SYSTEMS'][system]['MODE'] == 'PEER':
-                    if 'ALL_MMDVM_UNIT' in CONFIG['SYSTEMS'][system]['OPTIONS']:
+                    if b'ALL_MMDVM_UNIT' in CONFIG['SYSTEMS'][system]['OPTIONS']:
                         systems[system].send_system(_data)
+
+def expose_all(_data):
+    for system in CONFIG['SYSTEMS']:
+        if CONFIG['SYSTEMS'][system]['ENABLED']:
+                if CONFIG['SYSTEMS'][system]['MODE'] == 'PEER':
+                    if 'EXPOSE_ALL' in CONFIG['SYSTEMS'][system]['OTHER_OPTIONS']:
+                        systems[system].send_system(_data)
+                if CONFIG['SYSTEMS'][system]['MODE'] == 'OPENBRIDGE':
+##                    print(CONFIG['SYSTEMS'][system]['OTHER_OPTIONS'])
+                    if 'EXPOSE_ALL' in CONFIG['SYSTEMS'][system]['OTHER_OPTIONS']:
+                        systems[system].send_system(SVRD + b'MDAT' + _data)
 
                     
 
@@ -1600,20 +1611,23 @@ class routerHBP(HBSYSTEM):
         if _call_type == 'group':
             self.group_received(_peer_id, _rf_src, _dst_id, _seq, _slot, _frame_type, _dtype_vseq, _stream_id, _data)
             mirror_traffic(_data)
+            expose_all(_data)
         elif _call_type == 'unit':
             if self._system not in UNIT:
                 logger.error('(%s) *UNIT CALL NOT FORWARDED* UNIT calling is disabled for this system (INGRESS)', self._system)
             else:
                 self.unit_received(_peer_id, _rf_src, _dst_id, _seq, _slot, _frame_type, _dtype_vseq, _stream_id, _data)
                 mirror_traffic(_data)
-                all_unit_mmdvm_peer(_data)
+                expose_all(_data)
         elif _call_type == 'vcsbk':
             self.group_received(_peer_id, _rf_src, _dst_id, _seq, _slot, _frame_type, _dtype_vseq, _stream_id, _data)
             logger.debug('CSBK recieved, forwarded to destination TG.')
             mirror_traffic(_data)
+            expose_all(_data)
         else:
             logger.error('Unknown call type recieved -- not processed')
             mirror_traffic(_data)
+            expose_all(_data)
 
 #
 # Socket-based reporting section
