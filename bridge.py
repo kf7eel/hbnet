@@ -78,6 +78,7 @@ import copy
 from pathlib import Path
 import sys
 
+from binascii import b2a_hex as ahex
 
 
 
@@ -504,14 +505,22 @@ def mirror_traffic(_data):
 #                     if b'ALL_MMDVM_UNIT' in CONFIG['SYSTEMS'][system]['OPTIONS']:
 #                         systems[system].send_system(_data)
 
-def expose_all(_data):
+def expose_all(_data, _system):
+    # print('expose all')
+    # print(_system)
     for system in CONFIG['SYSTEMS']:
         if CONFIG['SYSTEMS'][system]['ENABLED']:
+            # Prevent a loop
+            if _system == system:
+                pass
+            else:
                 if CONFIG['SYSTEMS'][system]['MODE'] == 'PEER':
+                    print('peer')
                     if 'EXPOSE_ALL' in CONFIG['SYSTEMS'][system]['OTHER_OPTIONS']:
+                        print('send exp all')
                         systems[system].send_system(_data)
                 if CONFIG['SYSTEMS'][system]['MODE'] == 'OPENBRIDGE':
-##                    print(CONFIG['SYSTEMS'][system]['OTHER_OPTIONS'])
+    ##                    print(CONFIG['SYSTEMS'][system]['OTHER_OPTIONS'])
                     if 'EXPOSE_ALL' in CONFIG['SYSTEMS'][system]['OTHER_OPTIONS']:
                         systems[system].send_system(SVRD + b'MDAT' + _data)
 
@@ -1468,14 +1477,33 @@ class routerHBP(HBSYSTEM):
         _bits = _data[15]
  
         # Make/update this unit in the UNIT_MAP cache
-        UNIT_MAP[_rf_src] = (self.name, pkt_time)
+        # UNIT_MAP[_rf_src] = (self.name, pkt_time)
 
-        # Update other servers via OBP
-##        svrd_send_all(b'UNIT' + _rf_src) # + b'TIME' + pkt_time)
+
+        #Update other servers via OBP
+#        svrd_send_all(b'UNIT' + _rf_src) # + b'TIME' + pkt_time)
         
         
         # Is this a new call stream?
-        svrd_send_all(b'UNIT' + _rf_src)
+        # svrd_send_all(b'UNIT' + _rf_src)
+
+        # print(self._system)
+        # print(UNIT_MAP)
+
+        # Do not updaate MAP when EXPOSE_ALL, used for data gateway and voicemail
+        if 'EXPOSE_ALL' in CONFIG['SYSTEMS'][self.name]['OTHER_OPTIONS']:
+            if _dst_id in UNIT_MAP:
+                self._targets = [UNIT_MAP[_dst_id][0]]
+            if _dst_id not in UNIT_MAP:
+                self._targets = list(UNIT)
+                self._targets.remove(self._system)
+            pass
+        else:
+        # Make/update this unit in the UNIT_MAP cache
+            UNIT_MAP[_rf_src] = (self.name, pkt_time)
+        # Is this a new call stream?
+            svrd_send_all(b'UNIT' + _rf_src)
+
         
         if (_stream_id != self.STATUS[_slot]['RX_STREAM_ID']):
             
@@ -1483,17 +1511,18 @@ class routerHBP(HBSYSTEM):
             if (self.STATUS[_slot]['RX_TYPE'] != HBPF_SLT_VTERM) and (pkt_time < (self.STATUS[_slot]['RX_TIME'] + STREAM_TO)) and (_rf_src != self.STATUS[_slot]['RX_RFS']):
                 logger.warning('(%s) Packet received with STREAM ID: %s <FROM> SUB: %s PEER: %s <TO> UNIT %s, SLOT %s collided with existing call', self._system, int_id(_stream_id), int_id(_rf_src), int_id(_peer_id), int_id(_dst_id), _slot)
                 return
-                
-            # Create a destination list for the call:
-            if _dst_id in UNIT_MAP:
-                if UNIT_MAP[_dst_id][0] != self._system:
-                    self._targets = [UNIT_MAP[_dst_id][0]]
+            # Bypass normal UNIT routing for EXPOSE_ALL.
+            if 'EXPOSE_ALL' not in CONFIG['SYSTEMS'][self.name]['OTHER_OPTIONS']:
+                # Create a destination list for the call:
+                if _dst_id in UNIT_MAP:
+                    if UNIT_MAP[_dst_id][0] != self._system:
+                        self._targets = [UNIT_MAP[_dst_id][0]]
+                    else:
+                        self._targets = []
+                        logger.error('UNIT call to a subscriber on the same system, send nothing')
                 else:
-                    self._targets = []
-                    logger.error('UNIT call to a subscriber on the same system, send nothing')
-            else:
-                self._targets = list(UNIT)
-                self._targets.remove(self._system)
+                    self._targets = list(UNIT)
+                    self._targets.remove(self._system)
             
             # This is a new call stream, so log & report
             svrd_send_all(b'UNIT' + _rf_src)
@@ -1502,7 +1531,7 @@ class routerHBP(HBSYSTEM):
                     self._system, int_id(_stream_id), get_alias(_rf_src, subscriber_ids), int_id(_rf_src), get_alias(_peer_id, peer_ids), int_id(_peer_id), get_alias(_dst_id, talkgroup_ids), int_id(_dst_id), _slot, self._targets)
             if CONFIG['REPORTS']['REPORT']:
                 self._report.send_bridgeEvent('UNIT VOICE,START,RX,{},{},{},{},{},{},{}'.format(self._system, int_id(_stream_id), int_id(_peer_id), int_id(_rf_src), _slot, int_id(_dst_id), self._targets).encode(encoding='utf-8', errors='ignore'))
-
+        # print(self._targets)
         for _target in self._targets:
                 
             _target_status = systems[_target].STATUS
@@ -1611,23 +1640,23 @@ class routerHBP(HBSYSTEM):
         if _call_type == 'group':
             self.group_received(_peer_id, _rf_src, _dst_id, _seq, _slot, _frame_type, _dtype_vseq, _stream_id, _data)
             mirror_traffic(_data)
-            expose_all(_data)
+            expose_all(_data, self._system)
         elif _call_type == 'unit':
             if self._system not in UNIT:
                 logger.error('(%s) *UNIT CALL NOT FORWARDED* UNIT calling is disabled for this system (INGRESS)', self._system)
             else:
                 self.unit_received(_peer_id, _rf_src, _dst_id, _seq, _slot, _frame_type, _dtype_vseq, _stream_id, _data)
                 mirror_traffic(_data)
-                expose_all(_data)
+                expose_all(_data, self._system)
         elif _call_type == 'vcsbk':
             self.group_received(_peer_id, _rf_src, _dst_id, _seq, _slot, _frame_type, _dtype_vseq, _stream_id, _data)
             logger.debug('CSBK recieved, forwarded to destination TG.')
             mirror_traffic(_data)
-            expose_all(_data)
+            expose_all(_data, self._system)
         else:
             logger.error('Unknown call type recieved -- not processed')
             mirror_traffic(_data)
-            expose_all(_data)
+            expose_all(_data, self._system)
 
 #
 # Socket-based reporting section
@@ -1752,7 +1781,8 @@ if __name__ == '__main__':
             'REG_ACL': CONFIG['SYSTEMS'][i]['REG_ACL'],
             'SUB_ACL': CONFIG['SYSTEMS'][i]['SUB_ACL'],
             'TG1_ACL': CONFIG['SYSTEMS'][i]['TG1_ACL'],
-            'TG2_ACL': CONFIG['SYSTEMS'][i]['TG2_ACL']
+            'TG2_ACL': CONFIG['SYSTEMS'][i]['TG2_ACL'],
+            'OTHER_OPTIONS': CONFIG['SYSTEMS'][i]['OTHER_OPTIONS']
             }})
             CONFIG['SYSTEMS'][i + '-' + str(n_count)].update({'PEERS': {}})
             systems[i + '-' + str(n_count)] = routerHBP(i + '-' + str(n_count), CONFIG, report_server)

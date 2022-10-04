@@ -121,6 +121,16 @@ REC_DICT = {}
 
 # Module gobal varaibles
 
+# class OBP(OPENBRIDGE):
+
+#     def __init__(self, _name, _config, _report):
+#         OPENBRIDGE.__init__(self, _name, _config, _report)
+
+
+#     def dmrd_received(self, _peer_id, _rf_src, _dst_id, _seq, _slot, _call_type, _frame_type, _dtype_vseq, _stream_id, _data):
+#         playback().dmrd_received(self, _peer_id, _rf_src, _dst_id, _seq, _slot, _call_type, _frame_type, _dtype_vseq, _stream_id, _data)
+#         pass
+
 class playback(HBSYSTEM):
 
     def __init__(self, _name, _config, _report):
@@ -229,13 +239,13 @@ class playback(HBSYSTEM):
                         # print(_play_seq)
                         n = 0
                         for i in play(int_id(_rf_src)):
+                            sleep(2)
                             # print(i)
                             n = n + 1
                             logger.info('Playing message ' + str(n))
                             for r in i:
                                 self.send_system(r)
                                 sleep(0.06)
-                            sleep(2)
                         logger.info('Finished')
                     elif int_id(_dst_id) == COMMAND['delete_unit']:
                         delete_file(int_id(_rf_src))
@@ -355,6 +365,7 @@ class playback(HBSYSTEM):
                 sleep(2)
                 logger.info('(%s) *START  PLAYBACK* STREAM ID: %s SUB: %s (%s) REPEATER: %s (%s) TGID %s (%s), TS %s, Duration: %s', \
                                   self._system, int_id(_stream_id), get_alias(_rf_src, subscriber_ids), int_id(_rf_src), get_alias(_peer_id, peer_ids), int_id(_peer_id), get_alias(_dst_id, talkgroup_ids), int_id(_dst_id), _slot, call_duration)
+                # if _call_type != 'unit':
                 for i in self.CALL_DATA:
                     self.send_system(i)
                     #print(i)
