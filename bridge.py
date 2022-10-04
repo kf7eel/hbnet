@@ -1441,9 +1441,6 @@ class routerHBP(HBSYSTEM):
                                 if _system['ACTIVE'] == True:
                                     _system['ACTIVE'] = False
                                     logger.info('(%s) Bridge: %s, connection changed to state: %s', self._system, _bridge, _system['ACTIVE'])
-                                    # POST off
-                                    #update_tg(CONFIG, 'off', 0, [{'SYSTEM':_system['SYSTEM']}, {'ts':_system['TS']}, {'tg': int_id(_system['TGID'])}])
-##                                    update_tg(CONFIG, 'on', int(str(int_id(self.STATUS[2]['RX_PEER']))[:7]), [{'SYSTEM':_system['SYSTEM']}, {'ts1':int_id(self.STATUS[1]['RX_TGID'])}, {'ts2':int_id(self.STATUS[2]['RX_TGID'])}])
                                     # Cancel the timer if we've enabled an "ON" type timeout
                                     if _system['TO_TYPE'] == 'ON':
                                         _system['TIMER'] = pkt_time
@@ -1494,10 +1491,11 @@ class routerHBP(HBSYSTEM):
         if 'EXPOSE_ALL' in CONFIG['SYSTEMS'][self.name]['OTHER_OPTIONS']:
             if _dst_id in UNIT_MAP:
                 self._targets = [UNIT_MAP[_dst_id][0]]
+                logger.debug('Bypass normal UNIT call routing, destination: ' + str(int_id(_dst_id)) + ' on ' + UNIT_MAP[_dst_id][0])
             if _dst_id not in UNIT_MAP:
                 self._targets = list(UNIT)
                 self._targets.remove(self._system)
-            pass
+                logger.debug('Bypass normal UNIT call routing, destinations: ' + str(self._targets))
         else:
         # Make/update this unit in the UNIT_MAP cache
             UNIT_MAP[_rf_src] = (self.name, pkt_time)

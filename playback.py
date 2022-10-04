@@ -65,7 +65,8 @@ __status__     = 'pre-alpha'
 COMMAND = {
     'record_unit' : 35,
     'play_unit': 33,
-    'delete_unit':39
+    'delete_unit':39,
+    'tg_play':9
 
 }
 
@@ -76,34 +77,37 @@ def command_check(dmr_id):
         if dmr_id == i[1]:
             mode = True
             return mode
+        if str(dmr_id)[:1] == str(COMMAND['tg_play']):
+            mode = True
+            return mode
     return mode
 
 
-def delete_file(dmr_id):
-    os.remove('playback/' + str(dmr_id) + '.data')
+def delete_file(dmr_id, call_type):
+    os.remove('playback/' + str(dmr_id) + '_' + call_type + '.data')
     # print('remove file')
     logger.info('File removed')
 
-def write_file(lst, dmr_id):
+def write_file(lst, dmr_id, call_type):
     # with open('playback_test/' + str(random.randint(1,99)) + '.seq', 'w') as peer_file:
     try:
-        data = ast.literal_eval(os.popen('cat playback/' + str(dmr_id) + '.data').read())
+        data = ast.literal_eval(os.popen('cat playback/' + str(dmr_id) + '_' + call_type + '.data').read())
     except:
         data = []
     #     pass
     # new_lst = data + lst
     data.append(lst)
-    if not Path('playback/' + str(dmr_id) + '.data').is_file():
+    if not Path('playback/' + str(dmr_id) + '_' + call_type + '.data').is_file():
         Path('playback/' + str(dmr_id) + '.data').touch()
 
-    with open('playback/' + str(dmr_id) + '.data', 'w') as peer_file:
+    with open('playback/' + str(dmr_id) + '_' + call_type + '.data', 'w') as peer_file:
         peer_file.write(str(data))
         peer_file.close()
 
-def play(dmr_id):
+def play(dmr_id, call_type):
     # data = os.popen('cat playback_test/' + str(seq_file) + '.seq').read()
     try:
-        data = ast.literal_eval(os.popen('cat playback/' + str(dmr_id) + '.data').read())
+        data = ast.literal_eval(os.popen('cat playback/' + str(dmr_id) + '_' + call_type + '.data').read())
     except:
         data = []
         logger.error('No messages or other error.')
@@ -235,10 +239,10 @@ class playback(HBSYSTEM):
                     elif int_id(_dst_id) == COMMAND['play_unit']:
                         # _play_seq = play(int_id(_rf_src))
                         # print('play')
-                        logger.info('Playback started for ' + str(int_id(_rf_src)))
+                        logger.info('Playback started for UNIT: ' + str(int_id(_rf_src)))
                         # print(_play_seq)
                         n = 0
-                        for i in play(int_id(_rf_src)):
+                        for i in play(int_id(_rf_src), _call_type):
                             sleep(2)
                             # print(i)
                             n = n + 1
@@ -246,10 +250,26 @@ class playback(HBSYSTEM):
                             for r in i:
                                 self.send_system(r)
                                 sleep(0.06)
-                        logger.info('Finished')
+                        logger.info('Finished UNIT message playback')
                     elif int_id(_dst_id) == COMMAND['delete_unit']:
-                        delete_file(int_id(_rf_src))
+                        delete_file(int_id(_rf_src), _call_type)
                         logger.info('Deleting all messages for ' + str(int_id(_rf_src)))
+
+                    elif str(int_id(_dst_id))[:1] == str(COMMAND['tg_play']):
+                        # _play_seq = play(int_id(_rf_src))
+                        # print('play')
+                        logger.info('Playback started for talkgroup' + str(int_id(_dst_id)))
+                        # print(_play_seq)
+                        n = 0
+                        for i in play(int(str(int_id(_dst_id))[1:]), 'group'):
+                            sleep(1)
+                            # print(i)
+                            n = n + 1
+                            logger.info('Playing message ' + str(n))
+                            for r in i:
+                                self.send_system(r)
+                                sleep(0.06)
+                        logger.info('Finished talkgroup playback')
 
 
 
@@ -373,7 +393,7 @@ class playback(HBSYSTEM):
                 # print(REC_DICT[int_id(_rf_src)])
                 if REC_DICT[int_id(_rf_src)] == True:
                     logger.info('RF Source matches record command, saving for ' + str(int_id(_dst_id)) + ', ' + _call_type)
-                    write_file(self.CALL_DATA, int_id(_dst_id))
+                    write_file(self.CALL_DATA, int_id(_dst_id),_call_type)
 
                     REC_DICT[int_id(_rf_src)] = False
 
